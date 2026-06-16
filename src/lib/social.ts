@@ -20,7 +20,7 @@ export type PostTypeDef = { type: PostType; emoji: string; label: string; color:
 
 export const POST_TYPES: PostTypeDef[] = [
   { type: 'update', emoji: '✨', label: 'Update', color: '#7C3AF6', tint: '#EFE7FF', prompt: "What's on your mind? Share a moment from your day." },
-  { type: 'tip', emoji: '💡', label: 'Tip', color: '#FF8A1E', tint: '#FFF0DC', prompt: 'Share something that worked for you — help the squad out.' },
+  { type: 'tip', emoji: '💡', label: 'Tip', color: '#FF8A1E', tint: '#FFF0DC', prompt: 'Share something that worked for you, help the squad out.' },
   { type: 'question', emoji: '🙋', label: 'Question', color: '#2BB7F2', tint: '#E2F4FE', prompt: 'Stuck on something? Ask the community for advice.' },
   { type: 'win', emoji: '🎉', label: 'Win', color: '#18C98A', tint: '#E2F8EF', prompt: 'Celebrate a win, big or small. Let your squad cheer you on.' },
 ]

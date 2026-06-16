@@ -181,7 +181,7 @@ function Viewfinder({
       </div>
 
       <div style={{ textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.7)', padding: '0 40px 22px' }}>
-        {live ? 'Center your plate in the frame, then tap to capture.' : 'Snap a photo or log it manually — your call.'}
+        {live ? 'Center your plate in the frame, then tap to capture.' : 'Snap a photo or log it manually, your call.'}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, padding: '0 0 46px' }}>

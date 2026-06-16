@@ -1,4 +1,4 @@
-// Domain types for Fettle. These describe the real, persisted data model —
+// Domain types for Fettle. These describe the real, persisted data model,
 // no mock-only shapes. The storage layer (lib/api.ts) is written against these
 // so it can be swapped for a remote backend later without touching the UI.
 
@@ -8,7 +8,7 @@ export type Account = {
   id: string
   name: string
   email: string
-  /** Lightweight local password hash. NOT secure — see lib/api.ts. */
+  /** Lightweight local password hash. NOT secure, see lib/api.ts. */
   passwordHash: string
   avatar: string // CSS gradient
   createdAt: number
@@ -112,7 +112,7 @@ export type FeedEntry = {
 export type UserState = {
   goal: Goal
   settings: Settings
-  /** total lifetime XP — level & stage are derived from this */
+  /** total lifetime XP, level & stage are derived from this */
   xp: number
   meals: MealEntry[]
   activities: ActivityEntry[]

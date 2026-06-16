@@ -23,7 +23,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
     : d.streak >= 3
       ? { tag: "You're on fire!", text: `${d.streak}-day streak and counting.` }
       : d.caloriesConsumed > 0 && d.onTrack
-        ? { tag: 'Nice work', text: "You're on track today — keep it going." }
+        ? { tag: 'Nice work', text: "You're on track today, keep it going." }
         : { tag: 'Your first win awaits', text: 'Snap a meal to start your streak.' }
 
   const currentStageIdx = STAGES.findIndex((s) => s.name === d.stageName)
@@ -66,7 +66,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
         ))}
       </div>
 
-      {/* community impact — celebrating generosity, not just personal metrics */}
+      {/* community impact, celebrating generosity, not just personal metrics */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
         <div style={{ flex: 1, background: 'linear-gradient(135deg,#FF8A1E,#FFC53D)', borderRadius: 18, padding: '14px 16px', boxShadow: '0 5px 14px rgba(255,138,30,.2)' }}>
           <div style={{ fontSize: 20, marginBottom: 2 }}>👏</div>

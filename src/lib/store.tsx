@@ -102,7 +102,7 @@ function refreshCommunity(excludeId: string) {
 }
 
 /**
- * Simulates the community noticing your post — a member leaves an encouraging
+ * Simulates the community noticing your post, a member leaves an encouraging
  * reply shortly after you share. Locally this fakes the social loop; with a real
  * backend, genuine cheers from real people arrive here instead.
  */

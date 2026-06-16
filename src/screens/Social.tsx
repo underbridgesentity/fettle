@@ -298,7 +298,21 @@ export function CircleSheet({
             <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(255,255,255,.95)' }}>{num(goal.collective)} / {num(goal.target)} {c.goalUnit}</span>
             {joined && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.25)', padding: '3px 10px', borderRadius: 10 }}>You: +{num(goal.yours)}</span>}
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,.25)' }}>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff' }}>{c.rewardEmoji} Reward: {c.reward}</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(255,255,255,.92)' }}>{goal.pct >= 1 ? '🎉 Smashed it!' : `⏳ ${c.daysLeft} days left`}</span>
+          </div>
         </div>
+
+        {goal.pct >= 1 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#FFF7E6', border: '2px solid #FFC53D', borderRadius: 16, padding: '12px 14px', marginBottom: 16 }}>
+            <span style={{ fontSize: 26 }}>{c.rewardEmoji}</span>
+            <div>
+              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Reward unlocked!</div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B7A1E' }}>The circle earned the {c.reward} together.</div>
+            </div>
+          </div>
+        )}
 
         {/* share with circle */}
         {joined && (
@@ -315,7 +329,7 @@ export function CircleSheet({
           {feed.map((p) => (
             <CirclePost key={p.id} post={p} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />
           ))}
-          {feed.length === 0 && <div style={{ textAlign: 'center', padding: '14px 0', fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#B6AEC9' }}>No posts yet — say hi 👋</div>}
+          {feed.length === 0 && <div style={{ textAlign: 'center', padding: '14px 0', fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#B6AEC9' }}>No posts yet, say hi 👋</div>}
         </div>
 
         <button
@@ -384,7 +398,7 @@ export function NotificationsSheet({ open, onClose, onOpenMember }: { open: bool
           <div style={{ textAlign: 'center', padding: '24px 16px' }}>
             <div style={{ fontSize: 40, marginBottom: 8 }}>📣</div>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544', marginBottom: 4 }}>Nothing yet</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Share a win or a tip — your squad will cheer you on.</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Share a win or a tip, your squad will cheer you on.</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

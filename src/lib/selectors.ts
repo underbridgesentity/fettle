@@ -1,5 +1,5 @@
-// Pure, derived views over the persisted state. Everything the UI displays —
-// calories, streaks, levels, leaderboard rank, challenge progress — is computed
+// Pure, derived views over the persisted state. Everything the UI displays
+// (calories, streaks, levels, leaderboard rank, challenge progress) is computed
 // here from real logged data. No screen reads raw counters.
 
 import { dayKey, num, todayKey } from './format'

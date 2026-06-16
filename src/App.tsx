@@ -72,7 +72,7 @@ function Root() {
       <AddActivity open={activity} onClose={() => setActivity(false)} />
       <Settings open={settings} onClose={() => setSettings(false)} />
 
-      {/* social overlays — DOM order = stacking order (later sits on top).
+      {/* social overlays, DOM order = stacking order (later sits on top).
           Circle (bottom) < its post thread < member profile (top). */}
       <CircleSheet
         circleId={circleId}

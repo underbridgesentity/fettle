@@ -2,7 +2,7 @@
 
 Fettle runs on local storage out of the box. Point it at a free Supabase project
 to get **real accounts, cloud sync across devices, and a real global leaderboard**
-(everyone who signs up appears, ranked by weekly XP). No app code changes — it's
+(everyone who signs up appears, ranked by weekly XP). No app code changes, it's
 all configuration, because the UI talks to one data-access layer
 ([`src/lib/api/`](src/lib/api)) that has both a local and a Supabase adapter.
 
@@ -28,7 +28,7 @@ email-confirmation step to the onboarding flow.)
 
 ## 4. Add your keys
 
-1. **Project Settings → API** — copy the **Project URL** and the **anon public** key.
+1. **Project Settings → API**, copy the **Project URL** and the **anon public** key.
 2. Create `.env.local` in the repo root (copy from [`.env.example`](.env.example)):
 
    ```
@@ -62,7 +62,7 @@ the buttons sign into a per-provider demo account so the flow is testable offlin
 
 - ✅ Real auth, cloud-synced state, real global leaderboard.
 - ⏭️ **Friends** (invite codes / accept requests) and **friends-only leaderboards**
-  are the natural next step — add a `friendships` table and filter the leaderboard
+  are the natural next step, add a `friendships` table and filter the leaderboard
   query by it.
 - ⏭️ Meal **photos** currently embed as compressed data-URLs inside the JSON state.
   For scale, move them to **Supabase Storage** and keep only the URL in state.

@@ -1,5 +1,5 @@
 // Namespaced, versioned localStorage wrapper. The rest of the app never touches
-// localStorage directly — it goes through lib/api.ts, which uses this. Swapping
+// localStorage directly, it goes through lib/api.ts, which uses this. Swapping
 // to a remote backend means replacing api.ts, not this file.
 
 const NS = 'fettle'

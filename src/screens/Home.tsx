@@ -170,7 +170,7 @@ export function Home({
       </div>
 
       {shown.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '24px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Nothing here yet — be the first to share.</div>
+        <div style={{ textAlign: 'center', padding: '24px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Nothing here yet, be the first to share.</div>
       ) : (
         shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
       )}

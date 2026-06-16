@@ -84,7 +84,7 @@ export function Squad({ onOpenMember, onOpenCircle }: { onOpenMember: (id: strin
                 ))}
               </div>
               <div style={{ textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#B6AEC9', marginTop: 12 }}>
-                {scope === 'friends' ? `You're #${board.find((r) => r.you)?.rank ?? 1} among friends` : `Log meals & activities to climb — you're #${d.myRank} this week.`}
+                {scope === 'friends' ? `You're #${board.find((r) => r.you)?.rank ?? 1} among friends` : `Log meals & activities to climb, you're #${d.myRank} this week.`}
               </div>
             </>
           )}
@@ -103,7 +103,7 @@ export function Squad({ onOpenMember, onOpenCircle }: { onOpenMember: (id: strin
               </div>
             </>
           ) : (
-            <Empty emoji="🤝" title="Build your crew" body="Friends keep you accountable — cheer each other on, nudge a friend who's quiet, and race a private leaderboard." />
+            <Empty emoji="🤝" title="Build your crew" body="Friends keep you accountable, cheer each other on, nudge a friend who's quiet, and race a private leaderboard." />
           )}
 
           {suggestions.length > 0 && (

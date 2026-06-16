@@ -1,5 +1,5 @@
 // XP, levels, character evolution, streaks and badge rules. All of these are
-// derived from real logged data — nothing here is hard-coded per user.
+// derived from real logged data, nothing here is hard-coded per user.
 
 import { dayKey, todayKey } from './format'
 import type { UserState } from './types'

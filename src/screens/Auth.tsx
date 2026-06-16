@@ -231,7 +231,7 @@ function Welcome() {
         Together.
       </div>
       <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#9B91B8', maxWidth: 280, margin: '0 auto' }}>
-        Snap your meals, crush challenges with friends, and celebrate every win — big or small.
+        Snap your meals, crush challenges with friends, and celebrate every win, big or small.
       </div>
     </div>
   )
@@ -241,7 +241,7 @@ function GoalPicker({ goal, onPick }: { goal: Goal; onPick: (g: Goal) => void })
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
       <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 28, color: '#241544', marginBottom: 6 }}>What's your goal?</div>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', marginBottom: 22 }}>Pick one to start — you can change it anytime.</div>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', marginBottom: 22 }}>Pick one to start, you can change it anytime.</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         {GOAL_OPTIONS.map((g) => {
           const sel = goal === g.id

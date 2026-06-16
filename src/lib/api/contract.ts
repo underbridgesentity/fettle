@@ -10,7 +10,7 @@ export type SocialProvider = 'google' | 'apple'
 export const PENDING_GOAL_KEY = 'pendingGoal'
 
 export interface FettleApi {
-  /** which backend is active — handy for UI hints */
+  /** which backend is active, handy for UI hints */
   readonly mode: 'local' | 'supabase'
   /** social providers this backend supports */
   readonly socialProviders: SocialProvider[]

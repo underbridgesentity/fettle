@@ -1,5 +1,5 @@
-// localStorage-backed adapter. Default when no Supabase env is configured —
-// the app is fully functional offline with this alone.
+// localStorage-backed adapter. Default when no Supabase env is configured.
+// The app is fully functional offline with this alone.
 
 import { storage } from '../storage'
 import { gradientFor } from '../format'
@@ -11,7 +11,7 @@ const ACCOUNTS = 'accounts'
 const SESSION = 'session'
 const userKey = (id: string) => `user:${id}`
 
-// Local-only, deliberately simple. NOT a secure hash — real hashing is the
+// Local-only, deliberately simple. NOT a secure hash, real hashing is the
 // backend's job (see the Supabase adapter / your auth provider).
 function hash(s: string): string {
   let h = 5381
@@ -66,7 +66,7 @@ export const localApi: FettleApi = {
     return account
   },
 
-  // No real OAuth offline — sign into a stable per-provider demo account so the
+  // No real OAuth offline, sign into a stable per-provider demo account so the
   // one-tap flow works locally. Real Google/Apple kicks in with Supabase.
   async signInWithProvider(provider, opts) {
     const email = `${provider}.demo@fettle.local`

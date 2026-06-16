@@ -68,7 +68,7 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
       // Ensure a session (email-confirmation must be off for instant sign-in).
       if (!data.session) {
         const { error: sErr } = await sb.auth.signInWithPassword({ email, password: input.password })
-        if (sErr) throw new ApiError('Account created — confirm your email, then log in.')
+        if (sErr) throw new ApiError('Account created, confirm your email, then log in.')
       }
 
       const uid = (await sb.auth.getSession()).data.session?.user.id
