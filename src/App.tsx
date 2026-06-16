@@ -14,7 +14,7 @@ import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
 import { CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
 import { StoreProvider, useStore } from './lib/store'
-import { useFeed } from './lib/hooks'
+import { findDecoratedPost } from './lib/selectors'
 import { firstName } from './lib/format'
 import type { PostType } from './lib/types'
 
@@ -32,12 +32,11 @@ export function App() {
 
 function Root() {
   const { status, account, data, toast } = useStore()
-  const feed = useFeed()
   const [tab, setTab] = useState<Tab>('home')
   const [capture, setCapture] = useState(false)
   const [activity, setActivity] = useState(false)
   const [settings, setSettings] = useState(false)
-  const [compose, setCompose] = useState<{ open: boolean; type?: PostType }>({ open: false })
+  const [compose, setCompose] = useState<{ open: boolean; type?: PostType; circleId?: string }>({ open: false })
   const [postId, setPostId] = useState<string | null>(null)
   const [memberId, setMemberId] = useState<string | null>(null)
   const [circleId, setCircleId] = useState<string | null>(null)
@@ -47,7 +46,7 @@ function Root() {
   if (!account || !data) return <Auth />
   if (!data.welcomed) return <Welcome name={firstName(account.name)} />
 
-  const openPost = postId ? feed.find((p) => p.id === postId) ?? null : null
+  const openPost = postId && data ? findDecoratedPost(data, postId) : null
 
   return (
     <>
@@ -73,11 +72,18 @@ function Root() {
       <AddActivity open={activity} onClose={() => setActivity(false)} />
       <Settings open={settings} onClose={() => setSettings(false)} />
 
-      {/* social overlays */}
-      <ComposeSheet open={compose.open} initialType={compose.type} onClose={() => setCompose({ open: false })} />
+      {/* social overlays — DOM order = stacking order (later sits on top).
+          Circle (bottom) < its post thread < member profile (top). */}
+      <CircleSheet
+        circleId={circleId}
+        onClose={() => setCircleId(null)}
+        onOpenMember={setMemberId}
+        onOpenPost={setPostId}
+        onCompose={(cid) => setCompose({ open: true, type: 'update', circleId: cid })}
+      />
+      <ComposeSheet open={compose.open} initialType={compose.type} circleId={compose.circleId} onClose={() => setCompose({ open: false })} />
       <NotificationsSheet open={notifs} onClose={() => setNotifs(false)} onOpenMember={(id) => { setNotifs(false); setMemberId(id) }} />
       <CommentsSheet post={openPost} onClose={() => setPostId(null)} onOpenMember={setMemberId} />
-      <CircleSheet circleId={circleId} onClose={() => setCircleId(null)} onOpenMember={setMemberId} />
       <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />
 
       {toast && <Toast key={toast.key} message={toast.msg} />}

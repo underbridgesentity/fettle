@@ -3,11 +3,11 @@ import { Sheet } from '../components/Sheet'
 import { Avatar } from '../components/Avatar'
 import { actions, useStore } from '../lib/store'
 import { useFeed } from '../lib/hooks'
-import { REACTIONS } from '../lib/social'
+import { REACTIONS, REACTION_BY_KIND } from '../lib/social'
 import { POST_TYPES, POST_TYPE_BY_TYPE } from '../lib/social'
 import { CIRCLE_BY_ID, MEMBER_BY_ID } from '../lib/seed'
-import { relativeTime } from '../lib/format'
-import type { DecoratedFeed } from '../lib/selectors'
+import { relativeTime, num } from '../lib/format'
+import { buildCircleFeed, circleGoalProgress, type DecoratedFeed } from '../lib/selectors'
 import type { Comment, PostType } from '../lib/types'
 
 // ── Comments + reactions thread ──────────────────────────────────────────────
@@ -124,7 +124,7 @@ function CommentRow({ com, onOpenMember }: { com: Comment; onOpenMember: (id: st
 }
 
 // ── Composer ─────────────────────────────────────────────────────────────────
-export function ComposeSheet({ open, initialType, onClose }: { open: boolean; initialType?: PostType; onClose: () => void }) {
+export function ComposeSheet({ open, initialType, circleId, onClose }: { open: boolean; initialType?: PostType; circleId?: string; onClose: () => void }) {
   const [type, setType] = useState<PostType>(initialType ?? 'update')
   const [text, setText] = useState('')
 
@@ -137,14 +137,15 @@ export function ComposeSheet({ open, initialType, onClose }: { open: boolean; in
 
   function share() {
     if (!text.trim()) return
-    actions.post({ type, text })
+    actions.post({ type, text, circleId })
     onClose()
   }
 
   const def = POST_TYPE_BY_TYPE[type]
+  const circle = circleId ? CIRCLE_BY_ID[circleId] : null
 
   return (
-    <Sheet open={open} onClose={onClose} title="Share with your squad">
+    <Sheet open={open} onClose={onClose} title={circle ? `Share with ${circle.name}` : 'Share with your squad'}>
       <div style={{ padding: '4px 18px 22px' }}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {POST_TYPES.map((p) => (
@@ -243,46 +244,78 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
 }
 
 // ── Circle (support group) detail ────────────────────────────────────────────
-export function CircleSheet({ circleId, onClose, onOpenMember }: { circleId: string | null; onClose: () => void; onOpenMember: (id: string) => void }) {
+export function CircleSheet({
+  circleId, onClose, onOpenMember, onOpenPost, onCompose,
+}: {
+  circleId: string | null
+  onClose: () => void
+  onOpenMember: (id: string) => void
+  onOpenPost: (id: string) => void
+  onCompose: (circleId: string) => void
+}) {
   const { data } = useStore()
   const c = circleId ? CIRCLE_BY_ID[circleId] : null
-  if (!c || !circleId) return null
+  if (!c || !circleId || !data) return null
 
-  const joined = !!data?.circles.includes(circleId)
+  const joined = data.circles.includes(circleId)
   const members = c.members.map((id) => MEMBER_BY_ID[id]).filter(Boolean)
+  const goal = circleGoalProgress(data, c)
+  const feed = buildCircleFeed(data, circleId)
 
   return (
     <Sheet open={!!circleId} onClose={onClose} title={c.name}>
       <div style={{ padding: '4px 18px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, background: c.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, flex: 'none' }}>{c.emoji}</div>
-          <div>
+          <div style={{ width: 60, height: 60, borderRadius: 19, background: c.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, flex: 'none' }}>{c.emoji}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 20, color: '#241544' }}>{c.name}</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: c.color }}>{c.count} members</div>
-          </div>
-        </div>
-
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14.5, color: '#3A2B5C', lineHeight: 1.5, marginBottom: 16 }}>{c.blurb}</div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: c.tint, borderRadius: 16, padding: '14px 16px', marginBottom: 18 }}>
-          <span style={{ fontSize: 22 }}>🎯</span>
-          <div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: c.color, textTransform: 'uppercase', letterSpacing: '.4px' }}>This circle's goal</div>
-            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>{c.goal}</div>
-          </div>
-        </div>
-
-        <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 10 }}>Members</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-          {members.map((m) => (
-            <button key={m.id} onClick={() => onOpenMember(m.id)} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: 'none', borderRadius: 14, padding: 10, cursor: 'pointer', textAlign: 'left', boxShadow: '0 3px 10px rgba(120,60,180,.05)' }}>
-              <Avatar initial={m.initial} gradient={m.avatar} size={38} radius={12} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{m.name}</div>
-                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>Level {m.level ?? 1} · 🔥 {m.streak ?? 0}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex' }}>
+                {members.slice(0, 4).map((m, i) => (
+                  <div key={m.id} style={{ marginLeft: i ? -8 : 0 }}>
+                    <Avatar initial={m.initial} gradient={m.avatar} size={22} fontSize={10} ring="#F4EFFF" />
+                  </div>
+                ))}
               </div>
-            </button>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: c.color }}>{c.count} members</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#3A2B5C', lineHeight: 1.5, marginBottom: 16 }}>{c.blurb}</div>
+
+        {/* collective goal */}
+        <div style={{ background: `linear-gradient(135deg,${c.color},${c.color}cc)`, borderRadius: 20, padding: 16, marginBottom: 16, boxShadow: `0 8px 20px ${c.color}40` }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.9)', textTransform: 'uppercase', letterSpacing: '.4px' }}>🎯 This week, together</span>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: '#fff' }}>{Math.round(goal.pct * 100)}%</span>
+          </div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#fff', marginBottom: 10 }}>{c.goal}</div>
+          <div style={{ height: 12, borderRadius: 8, background: 'rgba(255,255,255,.28)', overflow: 'hidden', marginBottom: 8 }}>
+            <div style={{ width: `${goal.pct * 100}%`, height: '100%', borderRadius: 8, background: '#fff', transition: 'width .5s ease' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(255,255,255,.95)' }}>{num(goal.collective)} / {num(goal.target)} {c.goalUnit}</span>
+            {joined && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff', background: 'rgba(255,255,255,.25)', padding: '3px 10px', borderRadius: 10 }}>You: +{num(goal.yours)}</span>}
+          </div>
+        </div>
+
+        {/* share with circle */}
+        {joined && (
+          <button onClick={() => onCompose(c.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '2px solid #ECE6FA', borderRadius: 16, padding: '12px 14px', marginBottom: 18, cursor: 'pointer' }}>
+            <span style={{ width: 32, height: 32, borderRadius: 10, background: c.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flex: 'none' }}>{c.emoji}</span>
+            <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Share with this circle…</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" /></svg>
+          </button>
+        )}
+
+        {/* circle feed */}
+        <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 10 }}>Circle feed</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+          {feed.map((p) => (
+            <CirclePost key={p.id} post={p} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />
           ))}
+          {feed.length === 0 && <div style={{ textAlign: 'center', padding: '14px 0', fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#B6AEC9' }}>No posts yet — say hi 👋</div>}
         </div>
 
         <button
@@ -294,6 +327,36 @@ export function CircleSheet({ circleId, onClose, onOpenMember }: { circleId: str
         </button>
       </div>
     </Sheet>
+  )
+}
+
+function CirclePost({ post, onOpenPost, onOpenMember }: { post: DecoratedFeed; onOpenPost: (id: string) => void; onOpenMember: (id: string) => void }) {
+  const isMine = post.author === 'me'
+  const present = (Object.keys(post.reactionCounts) as Array<keyof typeof post.reactionCounts>).filter((k) => (post.reactionCounts[k] ?? 0) > 0)
+  return (
+    <div style={{ background: '#fff', borderRadius: 18, padding: 12, boxShadow: '0 4px 12px rgba(120,60,180,.05)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <button onClick={() => !isMine && onOpenMember(post.author)} style={{ border: 'none', background: 'none', padding: 0, cursor: isMine ? 'default' : 'pointer', flex: 'none' }}>
+          <Avatar initial={post.initial} gradient={post.avatar} size={36} radius={12} />
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>{post.action} · {relativeTime(post.at)}</div>
+        </div>
+      </div>
+      <button onClick={() => onOpenPost(post.id)} style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
+        {post.text && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13.5, color: '#3A2B5C', lineHeight: 1.4, marginBottom: 8 }}>{post.text}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {present.length > 0 && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {present.slice(0, 3).map((k) => <span key={k} style={{ fontSize: 12 }}>{REACTION_BY_KIND[k].emoji}</span>)}
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8' }}>{post.totalReactions}</span>
+            </span>
+          )}
+          <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#7C3AF6' }}>{post.commentCount > 0 ? `${post.commentCount} ${post.commentCount === 1 ? 'reply' : 'replies'}` : 'Encourage'}</span>
+        </div>
+      </button>
+    </div>
   )
 }
 

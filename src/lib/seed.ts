@@ -43,6 +43,8 @@ export const MEMBERS: SeedMember[] = [
 export const MEMBER_BY_ID: Record<string, SeedMember> = Object.fromEntries(MEMBERS.map((m) => [m.id, m]))
 
 /** Support circles — smaller communities rallying around a shared goal. */
+export type CircleMetric = 'activities' | 'steps' | 'meals' | 'days'
+
 export type Circle = {
   id: string
   name: string
@@ -53,17 +55,75 @@ export type Circle = {
   count: string
   goal: string
   members: string[] // member ids
+  /** collective weekly goal the circle pushes toward together */
+  goalUnit: string
+  goalTarget: number
+  /** seeded collective progress (the user's contribution is added on top) */
+  goalProgress: number
+  /** how the signed-in user contributes to the collective goal */
+  metric: CircleMetric
 }
 
 export const CIRCLES: Circle[] = [
-  { id: 'cir-runners', name: 'Morning Runners', emoji: '🏃', color: '#FF8A1E', tint: '#FFF0DC', count: '4.2k', goal: 'Run before 8am, 4× a week', members: ['m-maya', 'm-priya', 'm-leo'], blurb: 'Early miles, big smiles. We lace up before the world wakes — come run with us.' },
-  { id: 'cir-sugarfree', name: 'Sugar-Free Squad', emoji: '🍓', color: '#FF4D6D', tint: '#FFE7EC', count: '2.8k', goal: 'Cut added sugar, one day at a time', members: ['m-theo', 'm-aria', 'm-nina'], blurb: 'Beating cravings together. Share swaps, recipes and the wins (and the slip-ups — no judgement here).' },
-  { id: 'cir-newbeginnings', name: 'New Beginnings', emoji: '🌱', color: '#18C98A', tint: '#E2F8EF', count: '6.1k', goal: 'Build the habit, start small', members: ['m-aria', 'm-owen', 'm-kabelo'], blurb: 'Just starting out? This is your soft landing. Every streak begins at day one — we celebrate them all.' },
-  { id: 'cir-mindful', name: 'Mindful Eating', emoji: '🧘', color: '#7C3AF6', tint: '#EFE7FF', count: '1.9k', goal: 'Eat slow, log it, no guilt', members: ['m-nina', 'm-priya'], blurb: 'Wellness over willpower. Less restriction, more awareness — and a lot of encouragement.' },
-  { id: 'cir-steps', name: 'Step It Up', emoji: '👟', color: '#2BB7F2', tint: '#E2F4FE', count: '5.4k', goal: '10k steps a day, together', members: ['m-leo', 'm-owen', 'm-kabelo', 'm-maya'], blurb: 'Walk, pace, wander — it all counts. Hit your steps and keep the squad streak alive.' },
+  { id: 'cir-runners', name: 'Morning Runners', emoji: '🏃', color: '#FF8A1E', tint: '#FFF0DC', count: '4.2k', goal: 'Run before 8am, 4× a week', members: ['m-maya', 'm-priya', 'm-leo'], blurb: 'Early miles, big smiles. We lace up before the world wakes — come run with us.', goalUnit: 'runs this week', goalTarget: 2000, goalProgress: 1486, metric: 'activities' },
+  { id: 'cir-sugarfree', name: 'Sugar-Free Squad', emoji: '🍓', color: '#FF4D6D', tint: '#FFE7EC', count: '2.8k', goal: 'Cut added sugar, one day at a time', members: ['m-theo', 'm-aria', 'm-nina'], blurb: 'Beating cravings together. Share swaps, recipes and the wins (and the slip-ups — no judgement here).', goalUnit: 'sugar-free days', goalTarget: 1500, goalProgress: 968, metric: 'days' },
+  { id: 'cir-newbeginnings', name: 'New Beginnings', emoji: '🌱', color: '#18C98A', tint: '#E2F8EF', count: '6.1k', goal: 'Build the habit, start small', members: ['m-aria', 'm-owen', 'm-kabelo'], blurb: 'Just starting out? This is your soft landing. Every streak begins at day one — we celebrate them all.', goalUnit: 'meals logged', goalTarget: 5000, goalProgress: 3124, metric: 'meals' },
+  { id: 'cir-mindful', name: 'Mindful Eating', emoji: '🧘', color: '#7C3AF6', tint: '#EFE7FF', count: '1.9k', goal: 'Eat slow, log it, no guilt', members: ['m-nina', 'm-priya'], blurb: 'Wellness over willpower. Less restriction, more awareness — and a lot of encouragement.', goalUnit: 'mindful meals', goalTarget: 1200, goalProgress: 742, metric: 'meals' },
+  { id: 'cir-steps', name: 'Step It Up', emoji: '👟', color: '#2BB7F2', tint: '#E2F4FE', count: '5.4k', goal: '10k steps a day, together', members: ['m-leo', 'm-owen', 'm-kabelo', 'm-maya'], blurb: 'Walk, pace, wander — it all counts. Hit your steps and keep the squad streak alive.', goalUnit: 'steps', goalTarget: 5_000_000, goalProgress: 3_412_900, metric: 'steps' },
 ]
 
 export const CIRCLE_BY_ID: Record<string, Circle> = Object.fromEntries(CIRCLES.map((c) => [c.id, c]))
+
+/** Seeded posts inside a circle, so each one has a living conversation. */
+export function circleFeed(circleId: string, now = Date.now()): FeedEntry[] {
+  const M = MEMBER_BY_ID
+  const mk = (member: SeedMember, mins: number, postType: FeedEntry['postType'], text: string, react: FeedEntry['baseReactions'], comments: Comment[] = []): FeedEntry => ({
+    id: `circ-${circleId}-${member.id}-${mins}`,
+    at: now - mins * MIN,
+    kind: 'post',
+    author: member.id,
+    name: member.name,
+    initial: member.initial,
+    avatar: member.avatar,
+    action: postType === 'tip' ? 'shared a tip' : postType === 'win' ? 'celebrated a win' : postType === 'question' ? 'asked the circle' : 'shared an update',
+    postType,
+    text,
+    circleId,
+    baseCheers: 0,
+    baseReactions: react,
+    seedComments: comments,
+  })
+
+  switch (circleId) {
+    case 'cir-runners':
+      return [
+        mk(M['m-maya'], 22, 'win', 'Beat my 5K PB this morning — 26:40! The early start is brutal but so worth it ☀️', { cheer: 14, fire: 11, strong: 5 }, [c(M['m-leo'], now - 18 * MIN, 'Flying! 🔥 see you out there tomorrow')]),
+        mk(M['m-priya'], 95, 'tip', 'Lay your kit out the night before. Half the battle is just not having to think at 5:45am 👟', { cheer: 9, love: 6 }, [c(M['m-maya'], now - 80 * MIN, 'This is the way. Shoes by the door = no excuses', true)]),
+      ]
+    case 'cir-sugarfree':
+      return [
+        mk(M['m-aria'], 40, 'win', 'Day 10 no added sugar 🎉 the cravings have actually faded, didn\'t believe people when they said that', { cheer: 17, fire: 8, love: 9 }, [c(M['m-theo'], now - 30 * MIN, 'Huge! it really does get easier — proud of you 💪')]),
+        mk(M['m-nina'], 130, 'tip', 'Frozen grapes when a sweet craving hits. Tastes like candy, zero added sugar 🍇', { cheer: 12, love: 7 }, [c(M['m-aria'], now - 110 * MIN, 'Trying this tonight!')]),
+      ]
+    case 'cir-newbeginnings':
+      return [
+        mk(M['m-owen'], 18, 'update', 'Logged my first ever meal today. Small step but I actually did it 🙌', { cheer: 21, love: 14, strong: 6 }, [c(M['m-kabelo'], now - 12 * MIN, 'THIS is how it starts. Welcome — we\'ve got you 💛'), c(M['m-aria'], now - 8 * MIN, 'Day one is the hardest. So proud!')]),
+        mk(M['m-kabelo'], 150, 'question', 'How do you stay consistent in the first week? My motivation comes and goes 😅', { cheer: 5, love: 8 }, [c(M['m-aria'], now - 120 * MIN, 'Aim for "just log it", not perfect. Showing up beats motivation every time', true)]),
+      ]
+    case 'cir-mindful':
+      return [
+        mk(M['m-nina'], 35, 'tip', 'Put the fork down between bites. Sounds silly but it doubles how satisfied I feel 🍽️', { cheer: 10, love: 9 }, [c(M['m-priya'], now - 25 * MIN, 'Game changer. I eat half as much and enjoy it twice as much')]),
+        mk(M['m-priya'], 140, 'update', 'No guilt today — just noticed I was full and stopped. Tiny win but it counts 🧘', { cheer: 8, love: 11 }, []),
+      ]
+    case 'cir-steps':
+      return [
+        mk(M['m-leo'], 28, 'win', '14,200 steps today 🚶 took the long way home and called my mum, double win', { cheer: 13, strong: 7, love: 5 }, [c(M['m-owen'], now - 20 * MIN, 'Love a walk-and-talk 👏')]),
+        mk(M['m-kabelo'], 120, 'tip', 'Park at the far end of the lot, every time. Free steps add up fast 👟', { cheer: 9, fire: 4 }, []),
+      ]
+    default:
+      return []
+  }
+}
 
 const MIN = 60_000
 const HR = 3_600_000

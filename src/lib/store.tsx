@@ -375,11 +375,11 @@ export const actions = {
     commit({ ...data, comments: { ...data.comments, [feedId]: [...(data.comments[feedId] ?? []), com] } })
   },
 
-  post(input: { type: PostType; text: string }) {
+  post(input: { type: PostType; text: string; circleId?: string }) {
     const { data, account } = current
     if (!data || !account || !input.text.trim()) return
-    const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim() })
-    commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
+    const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), circleId: input.circleId })
+    commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: input.circleId ? 'Posted to your circle ✨' : 'Shared with your squad ✨' })
     scheduleSupport(entry.id)
   },
 

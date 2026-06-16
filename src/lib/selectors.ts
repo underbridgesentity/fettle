@@ -3,7 +3,7 @@
 // here from real logged data. No screen reads raw counters.
 
 import { dayKey, num, todayKey } from './format'
-import { CHALLENGE_BY_ID, MEMBER_BY_ID, MEMBERS, communityFeed, type SeedMember } from './seed'
+import { CHALLENGE_BY_ID, CIRCLES, MEMBER_BY_ID, MEMBERS, circleFeed, communityFeed, type Circle, type SeedMember } from './seed'
 import {
   BADGES,
   computeStreak,
@@ -41,10 +41,52 @@ export function decorateEntry(entry: FeedEntry, s: UserState): DecoratedFeed {
   return { ...entry, reactionCounts: counts, totalReactions, myReaction, comments, commentCount: comments.length }
 }
 
-/** The merged, decorated community feed: the user's own events + ambient community. */
+/** The merged, decorated global feed: the user's own (non-circle) events + ambient community. */
 export function buildFeed(s: UserState, now = Date.now()): DecoratedFeed[] {
-  const merged = [...s.feed, ...communityFeed(now)].sort((a, b) => b.at - a.at)
+  const merged = [...s.feed.filter((e) => !e.circleId), ...communityFeed(now)].sort((a, b) => b.at - a.at)
   return merged.map((e) => decorateEntry(e, s))
+}
+
+/** A single circle's feed: the user's posts to that circle + seeded circle posts. */
+export function buildCircleFeed(s: UserState, circleId: string, now = Date.now()): DecoratedFeed[] {
+  const mine = s.feed.filter((e) => e.circleId === circleId)
+  const merged = [...mine, ...circleFeed(circleId, now)].sort((a, b) => b.at - a.at)
+  return merged.map((e) => decorateEntry(e, s))
+}
+
+/** Resolve any post by id across the global feed, community and every circle. */
+export function findDecoratedPost(s: UserState, id: string, now = Date.now()): DecoratedFeed | null {
+  let entry = s.feed.find((e) => e.id === id) ?? communityFeed(now).find((e) => e.id === id)
+  if (!entry) {
+    for (const c of CIRCLES) {
+      const f = circleFeed(c.id, now).find((e) => e.id === id)
+      if (f) {
+        entry = f
+        break
+      }
+    }
+  }
+  return entry ? decorateEntry(entry, s) : null
+}
+
+/** Collective progress on a circle's shared goal, with the user's own contribution. */
+export function circleGoalProgress(s: UserState, circle: Circle, now = Date.now()) {
+  const joined = s.circles.includes(circle.id)
+  let yours = 0
+  if (joined) {
+    if (circle.metric === 'steps') yours = s.activities.reduce((t, a) => t + a.steps, 0)
+    else if (circle.metric === 'activities') yours = s.activities.length
+    else if (circle.metric === 'meals') yours = s.meals.length
+    else {
+      const days = new Set<string>()
+      s.meals.forEach((m) => days.add(dayKey(m.at)))
+      s.activities.forEach((a) => days.add(dayKey(a.at)))
+      yours = days.size
+    }
+  }
+  void now
+  const collective = circle.goalProgress + yours
+  return { joined, yours, collective, target: circle.goalTarget, pct: Math.min(1, collective / circle.goalTarget) }
 }
 
 export type LeaderRow = {

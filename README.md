@@ -65,7 +65,9 @@ Everything below is real, computed from what you log, and persisted across reloa
 - **Friends & circles** — add **friends**, nudge a quiet one, and race a private
   **friends-only leaderboard**. Join **support circles** (Morning Runners,
   New Beginnings, Sugar-Free Squad…) — smaller communities rallying around a
-  shared goal, each with its own members and goal.
+  shared goal. Each circle has its own **feed** (post, react, reply right inside
+  it) and a **collective weekly goal** the members push toward together, with your
+  own contribution counted in.
 - **Settings** — edit profile, change daily targets and goal, log out.
 
 ## Architecture

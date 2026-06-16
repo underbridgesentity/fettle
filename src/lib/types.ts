@@ -105,6 +105,8 @@ export type FeedEntry = {
   /** seeded reactions/comments so the community feels alive from day one */
   baseReactions?: Partial<Record<ReactionKind, number>>
   seedComments?: Comment[]
+  /** when set, this post belongs to a support circle rather than the global feed */
+  circleId?: string
 }
 
 export type UserState = {
