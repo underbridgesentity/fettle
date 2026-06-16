@@ -5,7 +5,7 @@ import { actions, useStore } from '../lib/store'
 import { useFeed } from '../lib/hooks'
 import { REACTIONS } from '../lib/social'
 import { POST_TYPES, POST_TYPE_BY_TYPE } from '../lib/social'
-import { MEMBER_BY_ID } from '../lib/seed'
+import { CIRCLE_BY_ID, MEMBER_BY_ID } from '../lib/seed'
 import { relativeTime } from '../lib/format'
 import type { DecoratedFeed } from '../lib/selectors'
 import type { Comment, PostType } from '../lib/types'
@@ -183,10 +183,11 @@ export function ComposeSheet({ open, initialType, onClose }: { open: boolean; in
 
 // ── Member profile ───────────────────────────────────────────────────────────
 export function MemberProfileSheet({ memberId, onClose }: { memberId: string | null; onClose: () => void }) {
-  if (!memberId || memberId === 'me') return null
-  const m = MEMBER_BY_ID[memberId]
-  if (!m) return null
+  const { data } = useStore()
+  const m = memberId && memberId !== 'me' ? MEMBER_BY_ID[memberId] : null
+  if (!m || !memberId) return null
 
+  const isFriend = !!data?.friends.includes(memberId)
   const stats = [
     { value: m.level ?? 1, label: 'Level', color: '#7C3AF6' },
     { value: m.streak ?? 0, label: 'Streak', color: '#FF8A1E' },
@@ -199,7 +200,10 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
       <div style={{ padding: '4px 18px 24px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 18 }}>
           <Avatar initial={m.initial} gradient={m.avatar} size={84} fontSize={34} />
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544', marginTop: 10 }}>{m.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{m.name}</span>
+            {isFriend && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#18C98A', background: '#E2F8EF', padding: '3px 9px', borderRadius: 10 }}>✓ Friends</span>}
+          </div>
           {m.bio && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', lineHeight: 1.45, marginTop: 4, maxWidth: 300 }}>{m.bio}</div>}
         </div>
 
@@ -212,7 +216,7 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: isFriend ? 10 : 0 }}>
           <button
             onClick={() => { actions.cheerMember(m.name); onClose() }}
             className="pressable"
@@ -220,13 +224,74 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
           >
             👏 Cheer on
           </button>
-          <button
-            onClick={() => { actions.cheerMember(m.name); onClose() }}
-            style={{ flex: 1, background: '#EFE7FF', color: '#7C3AF6', border: 'none', borderRadius: 16, padding: 14, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
-          >
-            + Follow
-          </button>
+          {isFriend ? (
+            <button onClick={() => { actions.nudgeFriend(m.name); onClose() }} style={{ flex: 1, background: '#EFE7FF', color: '#7C3AF6', border: 'none', borderRadius: 16, padding: 14, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>
+              👋 Nudge
+            </button>
+          ) : (
+            <button onClick={() => actions.addFriend(m.id)} className="pressable" style={{ flex: 1, background: '#7C3AF6', color: '#fff', border: 'none', borderRadius: 16, padding: 14, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, cursor: 'pointer', boxShadow: '0 4px 0 #5B22C9', ['--press-shadow' as string]: '0 2px 0 #5B22C9' }}>
+              + Add friend
+            </button>
+          )}
         </div>
+        {isFriend && (
+          <button onClick={() => actions.removeFriend(m.id)} style={{ width: '100%', background: 'none', border: 'none', color: '#C3BBD6', fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, padding: 8, cursor: 'pointer' }}>Remove friend</button>
+        )}
+      </div>
+    </Sheet>
+  )
+}
+
+// ── Circle (support group) detail ────────────────────────────────────────────
+export function CircleSheet({ circleId, onClose, onOpenMember }: { circleId: string | null; onClose: () => void; onOpenMember: (id: string) => void }) {
+  const { data } = useStore()
+  const c = circleId ? CIRCLE_BY_ID[circleId] : null
+  if (!c || !circleId) return null
+
+  const joined = !!data?.circles.includes(circleId)
+  const members = c.members.map((id) => MEMBER_BY_ID[id]).filter(Boolean)
+
+  return (
+    <Sheet open={!!circleId} onClose={onClose} title={c.name}>
+      <div style={{ padding: '4px 18px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 20, background: c.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34, flex: 'none' }}>{c.emoji}</div>
+          <div>
+            <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 20, color: '#241544' }}>{c.name}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: c.color }}>{c.count} members</div>
+          </div>
+        </div>
+
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14.5, color: '#3A2B5C', lineHeight: 1.5, marginBottom: 16 }}>{c.blurb}</div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: c.tint, borderRadius: 16, padding: '14px 16px', marginBottom: 18 }}>
+          <span style={{ fontSize: 22 }}>🎯</span>
+          <div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: c.color, textTransform: 'uppercase', letterSpacing: '.4px' }}>This circle's goal</div>
+            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>{c.goal}</div>
+          </div>
+        </div>
+
+        <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 10 }}>Members</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+          {members.map((m) => (
+            <button key={m.id} onClick={() => onOpenMember(m.id)} style={{ display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: 'none', borderRadius: 14, padding: 10, cursor: 'pointer', textAlign: 'left', boxShadow: '0 3px 10px rgba(120,60,180,.05)' }}>
+              <Avatar initial={m.initial} gradient={m.avatar} size={38} radius={12} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{m.name}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>Level {m.level ?? 1} · 🔥 {m.streak ?? 0}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => { joined ? actions.leaveCircle(c.id) : actions.joinCircle(c.id); if (!joined) onClose() }}
+          className="pressable"
+          style={{ width: '100%', background: joined ? '#F1ECFA' : c.color, color: joined ? '#9B91B8' : '#fff', border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, cursor: 'pointer', boxShadow: joined ? 'none' : '0 5px 0 rgba(0,0,0,.12)', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.12)' }}
+        >
+          {joined ? 'Leave circle' : `Join ${c.name} · +15 XP`}
+        </button>
       </div>
     </Sheet>
   )

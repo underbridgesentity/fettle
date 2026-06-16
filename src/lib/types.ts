@@ -117,6 +117,10 @@ export type UserState = {
   joinedChallenges: string[]
   /** challengeId -> ISO day the user joined */
   challengeJoinedOn: Record<string, string>
+  /** member ids the user is friends with */
+  friends: string[]
+  /** circle (support group) ids the user has joined */
+  circles: string[]
   /** badgeId -> unlock timestamp */
   badges: Record<string, number>
   /** feedEntryId -> cheered (legacy; superseded by reactions) */

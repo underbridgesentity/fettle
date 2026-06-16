@@ -7,7 +7,7 @@ import { createContext, useContext, useSyncExternalStore, type ReactNode } from 
 import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
 import { storage } from './storage'
 import { BADGES, XP, earnedBadges, estimateBurn, levelFromXp, stepsToKm } from './gamification'
-import { CHALLENGE_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
+import { CHALLENGE_BY_ID, CIRCLE_BY_ID, MEMBER_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
 import { todayKey } from './format'
 import type {
   Account,
@@ -385,6 +385,36 @@ export const actions = {
 
   cheerMember(name: string) {
     setToast(`You cheered ${name} 👏`)
+  },
+
+  addFriend(memberId: string) {
+    const { data } = current
+    if (!data || data.friends.includes(memberId)) return
+    const name = MEMBER_BY_ID[memberId]?.name ?? 'them'
+    commit({ ...data, friends: [...data.friends, memberId], xp: data.xp + 5 }, { toast: `You're now friends with ${name} 🤝` })
+  },
+
+  removeFriend(memberId: string) {
+    const { data } = current
+    if (!data) return
+    commit({ ...data, friends: data.friends.filter((id) => id !== memberId) })
+  },
+
+  nudgeFriend(name: string) {
+    setToast(`Nudge sent to ${name} 👋`)
+  },
+
+  joinCircle(circleId: string) {
+    const { data } = current
+    if (!data || data.circles.includes(circleId)) return
+    const c = CIRCLE_BY_ID[circleId]
+    commit({ ...data, circles: [...data.circles, circleId], xp: data.xp + 15 }, { toast: `Joined ${c ? c.name : 'the circle'} 🎉` })
+  },
+
+  leaveCircle(circleId: string) {
+    const { data } = current
+    if (!data) return
+    commit({ ...data, circles: data.circles.filter((id) => id !== circleId) })
   },
 
   updateSettings(patch: Partial<Settings>) {

@@ -62,6 +62,10 @@ Everything below is real, computed from what you log, and persisted across reloa
   profile celebrates **cheers given & received**, not just personal metrics. (In
   local mode, the community's responses to your posts are simulated; with Supabase
   they're real people.)
+- **Friends & circles** — add **friends**, nudge a quiet one, and race a private
+  **friends-only leaderboard**. Join **support circles** (Morning Runners,
+  New Beginnings, Sugar-Free Squad…) — smaller communities rallying around a
+  shared goal, each with its own members and goal.
 - **Settings** — edit profile, change daily targets and goal, log out.
 
 ## Architecture

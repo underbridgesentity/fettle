@@ -12,7 +12,7 @@ import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
-import { CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
+import { CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
 import { StoreProvider, useStore } from './lib/store'
 import { useFeed } from './lib/hooks'
 import { firstName } from './lib/format'
@@ -40,6 +40,7 @@ function Root() {
   const [compose, setCompose] = useState<{ open: boolean; type?: PostType }>({ open: false })
   const [postId, setPostId] = useState<string | null>(null)
   const [memberId, setMemberId] = useState<string | null>(null)
+  const [circleId, setCircleId] = useState<string | null>(null)
   const [notifs, setNotifs] = useState(false)
 
   if (status === 'loading') return <Splash />
@@ -62,7 +63,7 @@ function Root() {
           />
         )}
         {tab === 'challenges' && <Quests />}
-        {tab === 'squad' && <Squad />}
+        {tab === 'squad' && <Squad onOpenMember={setMemberId} onOpenCircle={setCircleId} />}
         {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} />}
       </div>
 
@@ -76,6 +77,7 @@ function Root() {
       <ComposeSheet open={compose.open} initialType={compose.type} onClose={() => setCompose({ open: false })} />
       <NotificationsSheet open={notifs} onClose={() => setNotifs(false)} onOpenMember={(id) => { setNotifs(false); setMemberId(id) }} />
       <CommentsSheet post={openPost} onClose={() => setPostId(null)} onOpenMember={setMemberId} />
+      <CircleSheet circleId={circleId} onClose={() => setCircleId(null)} onOpenMember={setMemberId} />
       <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />
 
       {toast && <Toast key={toast.key} message={toast.msg} />}

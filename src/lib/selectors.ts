@@ -3,7 +3,7 @@
 // here from real logged data. No screen reads raw counters.
 
 import { dayKey, num, todayKey } from './format'
-import { CHALLENGE_BY_ID, MEMBERS, communityFeed, type SeedMember } from './seed'
+import { CHALLENGE_BY_ID, MEMBER_BY_ID, MEMBERS, communityFeed, type SeedMember } from './seed'
 import {
   BADGES,
   computeStreak,
@@ -119,6 +119,9 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     Object.values(s.comments).flat().filter((com) => com.author === 'me').length
   const kudosReceived = s.kudosReceived
 
+  const friends = s.friends.map((id) => MEMBER_BY_ID[id]).filter((m): m is SeedMember => !!m)
+  const friendsLeaderboard = buildLeaderboard(account, weeklyXp, friends)
+
   return {
     now,
     account,
@@ -163,6 +166,11 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     winsCount: countWins(s),
     kudosGiven,
     kudosReceived,
+    friends,
+    friendIds: s.friends,
+    friendCount: friends.length,
+    friendsLeaderboard,
+    circleIds: s.circles,
   }
 }
 

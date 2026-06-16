@@ -42,6 +42,29 @@ export const MEMBERS: SeedMember[] = [
 
 export const MEMBER_BY_ID: Record<string, SeedMember> = Object.fromEntries(MEMBERS.map((m) => [m.id, m]))
 
+/** Support circles — smaller communities rallying around a shared goal. */
+export type Circle = {
+  id: string
+  name: string
+  emoji: string
+  blurb: string
+  color: string
+  tint: string
+  count: string
+  goal: string
+  members: string[] // member ids
+}
+
+export const CIRCLES: Circle[] = [
+  { id: 'cir-runners', name: 'Morning Runners', emoji: '🏃', color: '#FF8A1E', tint: '#FFF0DC', count: '4.2k', goal: 'Run before 8am, 4× a week', members: ['m-maya', 'm-priya', 'm-leo'], blurb: 'Early miles, big smiles. We lace up before the world wakes — come run with us.' },
+  { id: 'cir-sugarfree', name: 'Sugar-Free Squad', emoji: '🍓', color: '#FF4D6D', tint: '#FFE7EC', count: '2.8k', goal: 'Cut added sugar, one day at a time', members: ['m-theo', 'm-aria', 'm-nina'], blurb: 'Beating cravings together. Share swaps, recipes and the wins (and the slip-ups — no judgement here).' },
+  { id: 'cir-newbeginnings', name: 'New Beginnings', emoji: '🌱', color: '#18C98A', tint: '#E2F8EF', count: '6.1k', goal: 'Build the habit, start small', members: ['m-aria', 'm-owen', 'm-kabelo'], blurb: 'Just starting out? This is your soft landing. Every streak begins at day one — we celebrate them all.' },
+  { id: 'cir-mindful', name: 'Mindful Eating', emoji: '🧘', color: '#7C3AF6', tint: '#EFE7FF', count: '1.9k', goal: 'Eat slow, log it, no guilt', members: ['m-nina', 'm-priya'], blurb: 'Wellness over willpower. Less restriction, more awareness — and a lot of encouragement.' },
+  { id: 'cir-steps', name: 'Step It Up', emoji: '👟', color: '#2BB7F2', tint: '#E2F4FE', count: '5.4k', goal: '10k steps a day, together', members: ['m-leo', 'm-owen', 'm-kabelo', 'm-maya'], blurb: 'Walk, pace, wander — it all counts. Hit your steps and keep the squad streak alive.' },
+]
+
+export const CIRCLE_BY_ID: Record<string, Circle> = Object.fromEntries(CIRCLES.map((c) => [c.id, c]))
+
 const MIN = 60_000
 const HR = 3_600_000
 
