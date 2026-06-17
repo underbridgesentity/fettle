@@ -110,6 +110,7 @@ export function earnedCircleBadges(s: UserState): string[] {
 
 export type LeaderRow = {
   rank: number
+  id: string
   name: string
   initial: string
   avatar: string
@@ -259,6 +260,7 @@ export function computeWeeklyXp(s: UserState, now: number = Date.now()): number 
 
 function buildLeaderboard(account: Account, weeklyXp: number, members: SeedMember[]): LeaderRow[] {
   const rows: (Omit<LeaderRow, 'rank'> & { weeklyXp: number })[] = members.map((m: SeedMember) => ({
+    id: m.id,
     name: m.name,
     initial: m.initial,
     avatar: m.avatar,
@@ -268,6 +270,7 @@ function buildLeaderboard(account: Account, weeklyXp: number, members: SeedMembe
     you: false,
   }))
   rows.push({
+    id: 'me',
     name: `${account.name.split(' ')[0]} (You)`,
     initial: (account.name[0] || 'Y').toUpperCase(),
     avatar: account.avatar,
@@ -277,7 +280,7 @@ function buildLeaderboard(account: Account, weeklyXp: number, members: SeedMembe
     you: true,
   })
   rows.sort((a, b) => b.weeklyXp - a.weeklyXp)
-  return rows.map((r, i) => ({ rank: i + 1, name: r.name, initial: r.initial, avatar: r.avatar, xp: r.xp, move: r.move, you: r.you }))
+  return rows.map((r, i) => ({ rank: i + 1, id: r.id, name: r.name, initial: r.initial, avatar: r.avatar, xp: r.xp, move: r.move, you: r.you }))
 }
 
 function challengeProgress(c: Challenge, s: UserState, now: number): JoinedChallenge {

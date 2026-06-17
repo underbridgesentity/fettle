@@ -151,6 +151,7 @@ function scheduleBuddyResponse() {
 function setToast(msg: string) {
   toastKey += 1
   current = { ...current, toast: { msg, key: toastKey } }
+  emit()
   clearTimeout(toastTimer)
   toastTimer = setTimeout(() => {
     current = { ...current, toast: null }
@@ -494,6 +495,10 @@ export const actions = {
   dismissToast() {
     current = { ...current, toast: null }
     emit()
+  },
+
+  toast(message: string) {
+    setToast(message)
   },
 }
 

@@ -55,25 +55,27 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
                 <div style={{ background: 'linear-gradient(160deg,#7C3AF6,#9B5CFF)', borderRadius: 26, padding: '18px 14px 16px', marginBottom: 16, boxShadow: '0 10px 26px rgba(124,58,246,.28)' }}>
                   <div style={{ textAlign: 'center', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#fff', marginBottom: 14 }}>This Week's Champions</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10 }}>
-                    <Podium row={top[1]} place={2} avatarSize={54} fontSize={20} barHeight={42} barBg="rgba(255,255,255,.18)" ring="#E8E8F0" badge="#D7D7E0" xpColor="rgba(255,255,255,.7)" />
+                    <Podium row={top[1]} place={2} avatarSize={54} fontSize={20} barHeight={42} barBg="rgba(255,255,255,.18)" ring="#E8E8F0" badge="#D7D7E0" xpColor="rgba(255,255,255,.7)" onOpen={() => !top[1].you && onOpenMember(top[1].id)} />
                     <div style={{ flex: 1, textAlign: 'center' }}>
                       <svg width="22" height="18" viewBox="0 0 24 20" style={{ marginBottom: 2 }}><path d="M2 5l5 4 5-7 5 7 5-4-2 12H4L2 5Z" fill="#FFC53D" /></svg>
-                      <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 6px' }}>
-                        <Avatar initial={top[0].initial} gradient={top[0].avatar} size={64} fontSize={24} ring="#FFC53D" />
-                        <PlaceBadge n={1} bg="#FFC53D" size={24} />
-                      </div>
+                      <button onClick={() => !top[0].you && onOpenMember(top[0].id)} style={{ border: 'none', background: 'none', padding: 0, cursor: top[0].you ? 'default' : 'pointer', display: 'block', margin: '0 auto' }}>
+                        <div style={{ position: 'relative', width: 64, height: 64, margin: '0 auto 6px' }}>
+                          <Avatar initial={top[0].initial} gradient={top[0].avatar} size={64} fontSize={24} ring="#FFC53D" />
+                          <PlaceBadge n={1} bg="#FFC53D" size={24} />
+                        </div>
+                      </button>
                       <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: '#fff', marginTop: 6 }}>{top[0].name}</div>
                       <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#FFE6B8' }}>{num(top[0].xp)} XP</div>
                       <div style={{ height: 62, marginTop: 6, borderRadius: '12px 12px 0 0', background: 'rgba(255,255,255,.28)' }} />
                     </div>
-                    <Podium row={top[2]} place={3} avatarSize={54} fontSize={20} barHeight={32} barBg="rgba(255,255,255,.14)" ring="#E2A878" badge="#E2A878" xpColor="rgba(255,255,255,.7)" />
+                    <Podium row={top[2]} place={3} avatarSize={54} fontSize={20} barHeight={32} barBg="rgba(255,255,255,.14)" ring="#E2A878" badge="#E2A878" xpColor="rgba(255,255,255,.7)" onOpen={() => !top[2].you && onOpenMember(top[2].id)} />
                   </div>
                 </div>
               )}
 
               <div style={{ background: '#fff', borderRadius: 24, padding: 8, boxShadow: '0 6px 16px rgba(120,60,180,.06)' }}>
                 {board.map((l) => (
-                  <div key={l.rank} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 10px', borderRadius: 16, background: l.you ? '#F1ECFF' : 'transparent', marginBottom: 2 }}>
+                  <button key={l.rank} onClick={() => !l.you && onOpenMember(l.id)} style={{ width: '100%', textAlign: 'left', border: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 10px', borderRadius: 16, background: l.you ? '#F1ECFF' : 'transparent', marginBottom: 2, cursor: l.you ? 'default' : 'pointer' }}>
                     <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: l.you ? '#7C3AF6' : '#C3BBD6', width: 20, textAlign: 'center', flex: 'none' }}>{l.rank}</span>
                     <Avatar initial={l.initial} gradient={l.avatar} size={40} fontSize={16} />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -81,7 +83,7 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
                       <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{num(l.xp)} XP</div>
                     </div>
                     <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#18C98A', background: '#E2F8EF', padding: '4px 9px', borderRadius: 12, flex: 'none' }}>{l.move}</span>
-                  </div>
+                  </button>
                 ))}
               </div>
               <div style={{ textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#B6AEC9', marginTop: 12 }}>
@@ -267,13 +269,15 @@ function Empty({ emoji, title, body, cta, onCta }: { emoji: string; title: strin
   )
 }
 
-function Podium({ row, place, avatarSize, fontSize, barHeight, barBg, ring, badge, xpColor }: { row: LeaderRow; place: number; avatarSize: number; fontSize: number; barHeight: number; barBg: string; ring: string; badge: string; xpColor: string }) {
+function Podium({ row, place, avatarSize, fontSize, barHeight, barBg, ring, badge, xpColor, onOpen }: { row: LeaderRow; place: number; avatarSize: number; fontSize: number; barHeight: number; barBg: string; ring: string; badge: string; xpColor: string; onOpen?: () => void }) {
   return (
     <div style={{ flex: 1, textAlign: 'center' }}>
-      <div style={{ position: 'relative', width: avatarSize, height: avatarSize, margin: '0 auto 6px' }}>
-        <Avatar initial={row.initial} gradient={row.avatar} size={avatarSize} fontSize={fontSize} ring={ring} />
-        <PlaceBadge n={place} bg={badge} size={22} />
-      </div>
+      <button onClick={onOpen} style={{ border: 'none', background: 'none', padding: 0, cursor: row.you ? 'default' : 'pointer', display: 'block', margin: '0 auto' }}>
+        <div style={{ position: 'relative', width: avatarSize, height: avatarSize, margin: '0 auto 6px' }}>
+          <Avatar initial={row.initial} gradient={row.avatar} size={avatarSize} fontSize={fontSize} ring={ring} />
+          <PlaceBadge n={place} bg={badge} size={22} />
+        </div>
+      </button>
       <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 12, color: '#fff', marginTop: 6 }}>{row.name}</div>
       <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: xpColor }}>{num(row.xp)} XP</div>
       <div style={{ height: barHeight, marginTop: 6, borderRadius: '12px 12px 0 0', background: barBg }} />

@@ -1,6 +1,6 @@
 import { Mascot } from '../components/Mascot'
 import { Confetti } from '../components/Confetti'
-import { useStore } from '../lib/store'
+import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
@@ -112,7 +112,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
       </div>
       <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
         {d.badges.map((b) => (
-          <div key={b.id} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.6 }} title={b.hint}>
+          <button key={b.id} onClick={() => actions.toast(b.unlocked ? `${b.name} unlocked ✓` : `${b.name}: ${b.hint}`)} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
             <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : '#ECE6FA', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(120,60,180,.12)' }}>
               {b.unlocked ? (
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
@@ -121,7 +121,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
               )}
             </div>
             <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#7A719B', lineHeight: 1.2 }}>{b.name}</div>
-          </div>
+          </button>
         ))}
       </div>
 
@@ -134,12 +134,12 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
           </div>
           <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
             {d.circleBadges.filter((b) => b.inCircle || b.unlocked).map((b) => (
-              <div key={b.id} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.5 }} title={b.name}>
+              <button key={b.id} onClick={() => actions.toast(b.unlocked ? `${b.name} unlocked ✓` : `${b.name}: contribute to your circle to earn it`)} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : '#ECE6FA', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, boxShadow: '0 4px 10px rgba(120,60,180,.12)' }}>
                   {b.unlocked ? b.emoji : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9BFE0" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>}
                 </div>
                 <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#7A719B', lineHeight: 1.2 }}>{b.name}</div>
-              </div>
+              </button>
             ))}
           </div>
         </>

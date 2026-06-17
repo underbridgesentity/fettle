@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { ProgressBar } from '../components/ProgressBar'
 import { useDerived } from '../lib/hooks'
 import { actions } from '../lib/store'
 import { CHALLENGES, TEAM_CHALLENGE } from '../lib/seed'
 import { num } from '../lib/format'
 
+const CHALLENGE_CATS = ['All', ...Array.from(new Set(CHALLENGES.map((c) => c.cat)))]
+
 export function Quests() {
   const d = useDerived()
+  const [cat, setCat] = useState('All')
   if (!d) return null
+
+  const shownChallenges = cat === 'All' ? CHALLENGES : CHALLENGES.filter((c) => c.cat === cat)
 
   const dailyGoals = [
     { label: `Eat ${num(d.caloriesTarget)} kcal`, sub: `${num(d.caloriesConsumed)} logged today`, color: '#18C98A', pct: d.caloriesPct },
@@ -82,11 +88,16 @@ export function Quests() {
       )}
 
       {/* browse */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 2px' }}>
-        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Browse challenges</span>
-        <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#7C3AF6' }}>Filters</span>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544', marginBottom: 12, paddingLeft: 2 }}>Browse challenges</div>
+      <div className="fettle-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+        {CHALLENGE_CATS.map((cc) => (
+          <button key={cc} onClick={() => setCat(cc)} style={{ flex: 'none', background: cat === cc ? '#7C3AF6' : '#fff', color: cat === cc ? '#fff' : '#7A719B', border: cat === cc ? 'none' : '2px solid #ECE6FA', borderRadius: 14, padding: '8px 14px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc}</button>
+        ))}
       </div>
-      {CHALLENGES.map((c) => {
+      {shownChallenges.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '20px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>No challenges in this category yet.</div>
+      )}
+      {shownChallenges.map((c) => {
         const joined = d.joinedChallenges.some((jc) => jc.challenge.id === c.id)
         return (
           <div key={c.id} style={{ background: '#fff', borderRadius: 24, padding: 16, marginBottom: 12, boxShadow: '0 5px 16px rgba(120,60,180,.06)' }}>
