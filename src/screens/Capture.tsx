@@ -39,25 +39,32 @@ function mergeDetected(prev: LoggedFood[], detected: LoggedFood[]): LoggedFood[]
 }
 
 export function Capture({ onClose }: { onClose: () => void }) {
-  const [stage, setStage] = useState<'view' | 'log'>('view')
+  const [stage, setStage] = useState<'view' | 'analyzing' | 'log'>('view')
   const [photo, setPhoto] = useState<string | undefined>()
   const [items, setItems] = useState<LoggedFood[]>([])
   const [type, setType] = useState<MealType>(mealTypeFor())
-  const [analyzing, setAnalyzing] = useState(false)
+  // null = logged manually (no analysis); a number = the analyzer ran and found N foods.
+  const [detected, setDetected] = useState<number | null>(null)
 
-  // A snapped photo goes straight to the log screen, then (if the backend is
-  // configured) gets analyzed in the background and its results pre-filled.
+  // A snapped photo shows a dedicated "analyzing" screen first (when the analyzer
+  // is on), then opens the log with whatever it found pre-filled. With the
+  // analyzer off, it goes straight to manual logging.
   async function onCaptured(p: string) {
     setPhoto(p)
-    setStage('log')
-    if (!analyzerAvailable()) return
-    setAnalyzing(true)
+    if (!analyzerAvailable()) { setStage('log'); return }
+    setStage('analyzing')
+    let found: LoggedFood[] = []
     try {
-      const detected = await analyzeMeal(p)
-      if (detected.length) setItems((prev) => mergeDetected(prev, detected))
-    } finally {
-      setAnalyzing(false)
+      found = await Promise.race([
+        analyzeMeal(p),
+        new Promise<LoggedFood[]>((resolve) => setTimeout(() => resolve([]), 20000)),
+      ])
+    } catch {
+      found = []
     }
+    if (found.length) setItems((prev) => mergeDetected(prev, found))
+    setDetected(found.length)
+    setStage('log')
   }
 
   function addFood(food: Food) {
@@ -92,20 +99,24 @@ export function Capture({ onClose }: { onClose: () => void }) {
 
   return (
     <div data-screen-label="Meal Capture" style={{ position: 'absolute', inset: 0, zIndex: 95, background: '#15102A', display: 'flex', flexDirection: 'column' }}>
-      {stage === 'view' ? (
+      {stage === 'view' && (
         <Viewfinder
           onClose={onClose}
           onCaptured={onCaptured}
-          onManual={() => { setPhoto(undefined); setStage('log') }}
+          onManual={() => { setPhoto(undefined); setDetected(null); setStage('log') }}
         />
-      ) : (
+      )}
+      {stage === 'analyzing' && photo && (
+        <Analyzing photo={photo} onManual={() => { setDetected(null); setStage('log') }} />
+      )}
+      {stage === 'log' && (
         <LogScreen
           photo={photo}
           type={type}
           setType={setType}
           items={items}
           totals={totals}
-          analyzing={analyzing}
+          detected={detected}
           onRetake={() => setStage('view')}
           onClose={onClose}
           addFood={addFood}
@@ -231,9 +242,29 @@ function Viewfinder({
   )
 }
 
+// ── Analyzing ─────────────────────────────────────────────────────────────────
+function Analyzing({ photo, onManual }: { photo: string; onManual: () => void }) {
+  return (
+    <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+      <img src={photo} alt="Your meal" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(21,16,42,.4),rgba(21,16,42,.88))' }} />
+      <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px 72px', color: '#fff' }}>
+        <span style={{ width: 46, height: 46, borderRadius: '50%', border: '4px solid rgba(255,255,255,.3)', borderTopColor: '#fff', display: 'inline-block', animation: 'pep-spin .8s linear infinite', marginBottom: 18 }} />
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 24, marginBottom: 6 }}>Reading your plate</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.75)', maxWidth: 280, margin: '0 auto 22px', lineHeight: 1.4 }}>
+          Spotting the foods in your photo. This takes a few seconds.
+        </div>
+        <button onClick={onManual} style={{ background: 'rgba(255,255,255,.16)', color: '#fff', border: 'none', borderRadius: 14, padding: '11px 20px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+          Enter manually instead
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Log / food search ─────────────────────────────────────────────────────────
 function LogScreen({
-  photo, type, setType, items, totals, onRetake, onClose, addFood, setServings, onSave, analyzing,
+  photo, type, setType, items, totals, onRetake, onClose, addFood, setServings, onSave, detected,
 }: {
   photo?: string
   type: MealType
@@ -245,7 +276,7 @@ function LogScreen({
   addFood: (f: Food) => void
   setServings: (id: string, s: number) => void
   onSave: () => void
-  analyzing?: boolean
+  detected?: number | null
 }) {
   const [query, setQuery] = useState('')
   const results = useMemo(() => searchFoods(query, 24), [query])
@@ -266,10 +297,20 @@ function LogScreen({
       </div>
 
       <div style={{ padding: '16px 18px 150px' }}>
-        {analyzing && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg,#7C3AF6,#9B5CFF)', borderRadius: 16, padding: '12px 14px', marginBottom: 14, boxShadow: '0 6px 16px rgba(124,58,246,.22)' }}>
-            <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,.4)', borderTopColor: '#fff', display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#fff' }}>Reading your plate, this takes a sec...</span>
+        {detected != null && detected > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#E2F8EF', borderRadius: 16, padding: '12px 14px', marginBottom: 14 }}>
+            <span style={{ fontSize: 18, flex: 'none' }}>✨</span>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#0E8C5E', lineHeight: 1.3 }}>
+              Found {detected} item{detected === 1 ? '' : 's'} from your photo. Check it over, then add or edit below.
+            </span>
+          </div>
+        )}
+        {detected === 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#FFF0DC', borderRadius: 16, padding: '12px 14px', marginBottom: 14 }}>
+            <span style={{ fontSize: 18, flex: 'none' }}>🔍</span>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#9A5B12', lineHeight: 1.3 }}>
+              Couldn't auto-detect this one. Search and add the foods below.
+            </span>
           </div>
         )}
         {/* meal type */}
