@@ -68,8 +68,13 @@ Deno.serve(async (req) => {
 - Include packaged or branded items. If a nutrition label or packaging is visible, read it and use those numbers.
 - Include drinks.
 
-For each item, estimate the portion actually shown and its nutrition FOR THAT PORTION:
-- servings: how many portions of this item are shown (default 1).
+Estimating the real portion is the most important part. Do NOT default to a "standard" serving. Gauge the actual amount on the plate using whatever visual scale cues are present:
+- A dinner plate is about 26-28 cm across, a side plate about 20 cm, a fork about 19 cm long, a standard mug holds about 250 ml. Use any of these that are visible as a ruler.
+- Judge how much of the plate each food covers and how high/dense the pile is.
+- First estimate the weight in grams (or volume in ml for drinks) of the portion actually shown, then derive calories and macros FROM that weight. A clearly large or small portion must change the numbers proportionally, not snap back to a typical serving.
+
+For each item, return:
+- servings: how many portions of this item are shown (default 1, but use a higher number or a fraction if the amount shown is clearly more or less than one normal portion).
 - kcal: calories for the shown portion.
 - protein, carbs, fat: grams for the shown portion.
 - emoji: one fitting emoji for the item.
