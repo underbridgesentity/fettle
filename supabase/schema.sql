@@ -28,6 +28,10 @@ create policy "users manage own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+-- Unique handle for friend search + invite links (case-insensitive).
+alter table public.profiles add column if not exists username text;
+create unique index if not exists profiles_username_unique on public.profiles (lower(username));
+
 -- ── user_state ──────────────────────────────────────────────────────────────
 create table if not exists public.user_state (
   user_id uuid primary key references auth.users on delete cascade,
@@ -52,8 +56,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'name', 'Fettler'))
+  insert into public.profiles (id, name, username)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'name', 'Fettler'),
+    'fettler_' || substr(replace(new.id::text, '-', ''), 1, 8)
+  )
   on conflict (id) do nothing;
   return new;
 end;
