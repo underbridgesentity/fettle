@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { IOSDevice } from './components/IOSDevice'
 import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
@@ -43,6 +43,11 @@ function Root() {
   const [notifs, setNotifs] = useState(false)
   const [checkInOpen, setCheckInOpen] = useState(false)
 
+  // The four tabs share one scroll container, so reset it to the top on each
+  // tab change (otherwise a tab opens at the previous tab's scroll position).
+  const scrollRef = useRef<HTMLDivElement>(null)
+  useEffect(() => { scrollRef.current?.scrollTo(0, 0) }, [tab])
+
   // Surface OAuth redirect errors (e.g. a provider that is not configured).
   useEffect(() => {
     const hash = window.location.hash.replace(/^#/, '')
@@ -63,7 +68,7 @@ function Root() {
 
   return (
     <>
-      <div className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div ref={scrollRef} className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
         {tab === 'home' && (
           <Home
             onOpenCapture={() => setCapture(true)}
