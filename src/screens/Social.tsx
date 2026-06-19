@@ -42,7 +42,7 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{post.action} · {relativeTime(post.at)}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{post.action} · {relativeTime(post.at)}</div>
           </div>
         </div>
 
@@ -257,14 +257,14 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
             <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{m.name}</span>
             {isFriend && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#18C98A', background: '#E2F8EF', padding: '3px 9px', borderRadius: 10 }}>✓ Friends</span>}
           </div>
-          {m.bio && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', lineHeight: 1.45, marginTop: 4, maxWidth: 300 }}>{m.bio}</div>}
+          {m.bio && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596', lineHeight: 1.45, marginTop: 4, maxWidth: 300 }}>{m.bio}</div>}
         </div>
 
         <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
           {stats.map((s) => (
             <div key={s.label} style={{ flex: 1, background: '#fff', borderRadius: 16, padding: '13px 4px', textAlign: 'center', boxShadow: '0 4px 12px rgba(120,60,180,.05)' }}>
               <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 20, color: s.color }}>{s.value}</div>
-              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#9B91B8' }}>{s.label}</div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#6E6596' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -373,7 +373,7 @@ export function CircleSheet({
               <span style={{ fontSize: 22 }}>{goal.youEarned ? c.rewardEmoji : '🎖️'}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{goal.youEarned ? `You earned the ${c.reward} badge!` : `Earn the ${c.reward} badge`}</div>
-                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: goal.youEarned ? '#9B7A1E' : '#9B91B8' }}>{goal.youEarned ? "It's on your profile. Nice work." : `Your part: ${num(goal.yours)} / ${num(goal.youTarget)}`}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: goal.youEarned ? '#9B7A1E' : '#6E6596' }}>{goal.youEarned ? "It's on your profile. Nice work." : `Your part: ${num(goal.yours)} / ${num(goal.youTarget)}`}</div>
               </div>
             </div>
             {!goal.youEarned && (
@@ -388,13 +388,13 @@ export function CircleSheet({
         {joined && (
           <button onClick={() => onCompose(c.id)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, background: '#fff', border: '2px solid #ECE6FA', borderRadius: 16, padding: '12px 14px', marginBottom: 18, cursor: 'pointer' }}>
             <span style={{ width: 32, height: 32, borderRadius: 10, background: c.tint, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flex: 'none' }}>{c.emoji}</span>
-            <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Share with this circle…</span>
+            <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>Share with this circle…</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c.color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" /></svg>
           </button>
         )}
 
         {/* circle feed */}
-        <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 10 }}>Circle feed</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px', marginBottom: 10 }}>Circle feed</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
           {feed.map((p) => (
             <CirclePost key={p.id} post={p} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />
@@ -405,7 +405,7 @@ export function CircleSheet({
         <button
           onClick={() => { joined ? actions.leaveCircle(c.id) : actions.joinCircle(c.id); if (!joined) onClose() }}
           className="pressable"
-          style={{ width: '100%', background: joined ? '#F1ECFA' : c.color, color: joined ? '#9B91B8' : '#fff', border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, cursor: 'pointer', boxShadow: joined ? 'none' : '0 5px 0 rgba(0,0,0,.12)', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.12)' }}
+          style={{ width: '100%', background: joined ? '#F1ECFA' : c.color, color: joined ? '#6E6596' : '#fff', border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, cursor: 'pointer', boxShadow: joined ? 'none' : '0 5px 0 rgba(0,0,0,.12)', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.12)' }}
         >
           {joined ? 'Leave circle' : `Join ${c.name} · +15 XP`}
         </button>
@@ -425,7 +425,7 @@ function CirclePost({ post, onOpenPost, onOpenMember }: { post: DecoratedFeed; o
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>{post.action} · {relativeTime(post.at)}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#6E6596' }}>{post.action} · {relativeTime(post.at)}</div>
         </div>
       </div>
       <button onClick={() => onOpenPost(post.id)} style={{ display: 'block', width: '100%', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
@@ -434,7 +434,7 @@ function CirclePost({ post, onOpenPost, onOpenMember }: { post: DecoratedFeed; o
           {present.length > 0 && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {present.slice(0, 3).map((k) => <span key={k} style={{ fontSize: 12 }}>{REACTION_BY_KIND[k].emoji}</span>)}
-              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8' }}>{post.totalReactions}</span>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596' }}>{post.totalReactions}</span>
             </span>
           )}
           <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#7C3AF6' }}>{post.commentCount > 0 ? `${post.commentCount} ${post.commentCount === 1 ? 'reply' : 'replies'}` : 'Encourage'}</span>
@@ -468,7 +468,7 @@ export function NotificationsSheet({ open, onClose, onOpenMember }: { open: bool
           <div style={{ textAlign: 'center', padding: '24px 16px' }}>
             <div style={{ fontSize: 40, marginBottom: 8 }}>📣</div>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544', marginBottom: 4 }}>Nothing yet</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Share a win or a tip, your squad will cheer you on.</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#6E6596' }}>Share a win or a tip, your squad will cheer you on.</div>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

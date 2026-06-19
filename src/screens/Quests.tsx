@@ -24,8 +24,8 @@ export function Quests() {
 
   return (
     <div data-screen-label="Quests" style={{ padding: '56px 18px 116px' }}>
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 30, color: '#241544', marginBottom: 4 }}>Quests</div>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', marginBottom: 18 }}>Win them together. Brag about it forever.</div>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 30, color: '#241544', marginBottom: 4 }}>Challenges</div>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596', marginBottom: 18 }}>Win them together. Brag about it forever.</div>
 
       {/* team challenge */}
       <div style={{ position: 'relative', background: 'linear-gradient(140deg,#18C98A,#12B47B)', borderRadius: 26, padding: 18, marginBottom: 18, overflow: 'hidden', boxShadow: '0 10px 26px rgba(24,201,138,.32)' }}>
@@ -57,7 +57,7 @@ export function Quests() {
           <div key={g.label}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{g.label}</span>
-              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>{g.sub}</span>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>{g.sub}</span>
             </div>
             <ProgressBar pct={g.pct} fill={g.color} track="#F1ECFA" />
           </div>
@@ -80,7 +80,7 @@ export function Quests() {
                   )}
                 </div>
                 <ProgressBar pct={jc.pct} fill={jc.challenge.color} track="#F1ECFA" />
-                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8', marginTop: 6 }}>{jc.label}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596', marginTop: 6 }}>{jc.label}</div>
               </div>
             ))}
           </div>
@@ -95,7 +95,7 @@ export function Quests() {
         ))}
       </div>
       {shownChallenges.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '20px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>No challenges in this category yet.</div>
+        <div style={{ textAlign: 'center', padding: '20px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>No challenges in this category yet.</div>
       )}
       {shownChallenges.map((c) => {
         const joined = d.joinedChallenges.some((jc) => jc.challenge.id === c.id)
@@ -109,7 +109,7 @@ export function Quests() {
                 <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#241544' }}>{c.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
                   <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#fff', background: c.color, padding: '3px 9px', borderRadius: 12 }}>{c.cat}</span>
-                  <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{c.people} joined</span>
+                  <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{c.people} joined</span>
                 </div>
               </div>
             </div>
@@ -117,11 +117,11 @@ export function Quests() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{c.days} days</span>
-                  <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>{c.diff}</span>
+                  <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#6E6596' }}>{c.diff}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill={c.color}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
-                  <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>{c.reward}</span>
+                  <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>{c.reward}</span>
                 </div>
               </div>
               <button

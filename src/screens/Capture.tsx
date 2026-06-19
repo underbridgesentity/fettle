@@ -240,7 +240,7 @@ function LogScreen({
             <button
               key={m.id}
               onClick={() => setType(m.id)}
-              style={{ flex: 1, textAlign: 'center', background: type === m.id ? '#fff' : 'transparent', borderRadius: 12, padding: '9px 4px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: type === m.id ? '#7C3AF6' : '#9B91B8', border: 'none', cursor: 'pointer', boxShadow: type === m.id ? '0 2px 6px rgba(120,60,180,.12)' : 'none' }}
+              style={{ flex: 1, textAlign: 'center', background: type === m.id ? '#fff' : 'transparent', borderRadius: 12, padding: '9px 4px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: type === m.id ? '#7C3AF6' : '#6E6596', border: 'none', cursor: 'pointer', boxShadow: type === m.id ? '0 2px 6px rgba(120,60,180,.12)' : 'none' }}
             >
               {m.label}
             </button>
@@ -255,7 +255,7 @@ function LogScreen({
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F4EFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{it.emoji}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.name}</div>
-                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving}</div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Stepper onClick={() => setServings(it.foodId, it.servings - 1)} label="−" />
@@ -283,7 +283,7 @@ function LogScreen({
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
             {quick.map((f) => (
               <button key={f.id} onClick={() => addFood(f)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '2px solid #ECE6FA', borderRadius: 14, padding: '8px 12px', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#241544' }}>
-                <span style={{ fontSize: 16 }}>{f.emoji}</span> {f.name.split(' ')[0]}
+                <span style={{ fontSize: 16 }}>{f.emoji}</span> {f.name}
               </button>
             ))}
           </div>
@@ -299,7 +299,7 @@ function LogScreen({
               <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F4EFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{f.emoji}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{f.name}</div>
-                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{f.kcal} kcal · {f.serving} · {f.category}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{f.kcal} kcal · {f.serving} · {f.category}</div>
               </div>
               <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#EFE7FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
@@ -307,7 +307,7 @@ function LogScreen({
             </button>
           ))}
           {results.length === 0 && (
-            <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>No foods match "{query}".</div>
+            <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>No foods match "{query}".</div>
           )}
         </div>
       </div>
@@ -316,8 +316,8 @@ function LogScreen({
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '14px 18px 26px', background: 'linear-gradient(180deg,transparent,#F4EFFF 26%)' }}>
         {items.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: '#9B91B8' }}>kcal</span></span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: '#6E6596' }}>kcal</span></span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
           </div>
         )}
         <button

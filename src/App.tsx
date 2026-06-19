@@ -76,7 +76,7 @@ function Root() {
         )}
         {tab === 'challenges' && <Quests />}
         {tab === 'squad' && <Squad onOpenMember={setMemberId} onOpenCircle={setCircleId} onCheckIn={() => setCheckInOpen(true)} />}
-        {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} />}
+        {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} onSnap={() => setCapture(true)} />}
       </div>
 
       <TabBar tab={tab} onTab={setTab} onCapture={() => setCapture(true)} />

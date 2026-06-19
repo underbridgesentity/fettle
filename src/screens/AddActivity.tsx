@@ -87,7 +87,7 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
 function NumField({ label, value, onChange, suffix }: { label: string; value: string; onChange: (v: string) => void; suffix?: string }) {
   return (
     <label style={{ display: 'block', marginBottom: 12 }}>
-      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', paddingLeft: 4 }}>{label}</span>
+      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px', paddingLeft: 4 }}>{label}</span>
       <div style={{ position: 'relative', marginTop: 6 }}>
         <input
           type="number"
@@ -96,7 +96,7 @@ function NumField({ label, value, onChange, suffix }: { label: string; value: st
           onChange={(e) => onChange(e.target.value)}
           style={{ width: '100%', background: '#fff', border: '2.5px solid #ECE6FA', borderRadius: 16, padding: '14px 16px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#241544', outline: 'none' }}
         />
-        {suffix && <span style={{ position: 'absolute', right: 16, top: 16, fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#9B91B8' }}>{suffix}</span>}
+        {suffix && <span style={{ position: 'absolute', right: 16, top: 16, fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596' }}>{suffix}</span>}
       </div>
     </label>
   )

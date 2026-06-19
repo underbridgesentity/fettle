@@ -84,7 +84,7 @@ export function Auth() {
           <div style={{ textAlign: 'center', marginBottom: 22 }}>
             <Mascot stage="Sprout" size={88} float />
             <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 32, color: GRAPE, marginTop: 6 }}>Welcome back</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Log in to keep your streak alive.</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>Log in to keep your streak alive.</div>
           </div>
           {hasSocial && (
             <>
@@ -108,7 +108,7 @@ export function Auth() {
     <Shell>
       <Header canBack={canBack} onBack={back} step={step} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: step === 0 ? 'center' : 'flex-start', paddingTop: step === 0 ? 0 : 20, textAlign: 'center' }}>
         {step === 0 && <Welcome />}
         {step === 1 && <GoalPicker goal={goal} onPick={setGoal} />}
         {step === 2 && <HowItWorks />}
@@ -239,7 +239,7 @@ function Welcome() {
         <br />
         Together.
       </div>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#9B91B8', maxWidth: 280, margin: '0 auto' }}>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#6E6596', maxWidth: 280, margin: '0 auto' }}>
         Snap your meals, crush challenges with friends, and celebrate every win, big or small.
       </div>
     </div>
@@ -250,7 +250,7 @@ function GoalPicker({ goal, onPick }: { goal: Goal; onPick: (g: Goal) => void })
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
       <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 28, color: '#241544', marginBottom: 6 }}>What's your goal?</div>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', marginBottom: 22 }}>Pick one to start, you can change it anytime.</div>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596', marginBottom: 22 }}>Pick one to start, you can change it anytime.</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         {GOAL_OPTIONS.map((g) => {
           const sel = goal === g.id
@@ -291,7 +291,7 @@ function HowItWorks() {
             </div>
             <div>
               <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#241544' }}>{r.title}</div>
-              <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>{r.sub}</div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#6E6596' }}>{r.sub}</div>
             </div>
           </div>
         ))}
@@ -301,7 +301,7 @@ function HowItWorks() {
           </div>
           <div>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#241544' }}>Earn the glory</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Badges, levels &amp; bragging rights.</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#6E6596' }}>Badges, levels &amp; bragging rights.</div>
           </div>
         </div>
       </div>
@@ -318,8 +318,8 @@ function SignupForm({
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
       <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 28, color: '#241544', marginBottom: 6 }}>Create your account</div>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8', marginBottom: 22 }}>Your progress saves on this device.</div>
-      <Field label="Name" value={name} onChange={setName} placeholder="Sam Carter" invalid={err?.field === 'name'} autoFocus />
+      <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596', marginBottom: 22 }}>Your progress saves on this device.</div>
+      <Field label="Name" value={name} onChange={setName} placeholder="Your name" invalid={err?.field === 'name'} autoFocus />
       <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@email.com" invalid={err?.field === 'email'} />
       <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 6 characters" invalid={err?.field === 'password'} onEnter={onEnter} />
       {err && <ErrorNote>{err.message}</ErrorNote>}
@@ -337,7 +337,7 @@ function Field({
   const inputType = isPassword && show ? 'text' : type
   return (
     <label style={{ display: 'block', textAlign: 'left', marginBottom: 14 }}>
-      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', paddingLeft: 4 }}>{label}</span>
+      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px', paddingLeft: 4 }}>{label}</span>
       <div style={{ position: 'relative', marginTop: 6 }}>
         <input
           type={inputType}
@@ -356,9 +356,9 @@ function Field({
             style={{ position: 'absolute', right: 8, top: 8, width: 34, height: 34, borderRadius: 10, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             {show ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9B91B8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E6596" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9B91B8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.4 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a16.8 16.8 0 0 1-3.5 4.3M6.2 6.2A16.6 16.6 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 2.8-.4" /></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6E6596" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.4 5.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a16.8 16.8 0 0 1-3.5 4.3M6.2 6.2A16.6 16.6 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 2.8-.4" /></svg>
             )}
           </button>
         )}
@@ -391,7 +391,7 @@ function PrimaryButton({ children, onClick, disabled }: { children: React.ReactN
 
 function LinkButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{ background: 'none', border: 'none', color: '#9B91B8', fontFamily: 'Nunito', fontWeight: 800, fontSize: 14, padding: 14, cursor: 'pointer' }}>
+    <button onClick={onClick} style={{ background: 'none', border: 'none', color: '#6E6596', fontFamily: 'Nunito', fontWeight: 800, fontSize: 14, padding: 14, cursor: 'pointer' }}>
       {children}
     </button>
   )

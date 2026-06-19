@@ -37,7 +37,7 @@ export function TabBar({
         <path d="M6 10v9h4v-5h4v5h4v-9" />
       </TabButton>
 
-      <TabButton label="Quests" color={color('challenges')} onClick={() => onTab('challenges')}>
+      <TabButton label="Challenges" color={color('challenges')} onClick={() => onTab('challenges')}>
         <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" />
         <path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M9 20h6M12 13v4" />
       </TabButton>

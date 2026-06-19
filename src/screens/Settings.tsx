@@ -32,7 +32,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
           </Row>
           <Row>
             <Label>Email</Label>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#9B91B8' }}>{account.email}</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#6E6596' }}>{account.email}</span>
           </Row>
         </Section>
 
@@ -79,7 +79,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px', padding: '0 4px 8px' }}>{title}</div>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px', padding: '0 4px 8px' }}>{title}</div>
       <div style={{ background: '#fff', borderRadius: 18, padding: '4px 14px', boxShadow: '0 5px 14px rgba(120,60,180,.05)' }}>{children}</div>
     </div>
   )

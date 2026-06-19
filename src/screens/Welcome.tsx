@@ -37,7 +37,7 @@ export function Welcome({ name }: { name: string }) {
               </svg>
             </div>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 30, color: '#241544', marginBottom: 8 }}>You're in, {name}!</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#9B91B8', maxWidth: 280, margin: '0 auto 14px' }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#6E6596', maxWidth: 280, margin: '0 auto 14px' }}>
               You just earned your first badge. Your squad is waiting, let's make today count.
             </div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', borderRadius: 16, padding: '9px 15px', boxShadow: '0 6px 16px rgba(120,60,180,.1)' }}>

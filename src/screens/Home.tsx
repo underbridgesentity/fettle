@@ -54,7 +54,7 @@ export function Home({
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>{longDate(now)}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>{longDate(now)}</div>
           <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 26, lineHeight: 1.05, color: '#241544' }}>{greeting(now)}, {firstName(account.name)}!</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -80,7 +80,7 @@ export function Home({
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 5 }}>
             <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Level {d.level} · {d.stageName}</span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>{d.xpInto} / {d.xpNeed} XP</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>{d.xpInto} / {d.xpNeed} XP</span>
           </div>
           <ProgressBar pct={d.xpPct} fill="linear-gradient(90deg,#9B5CFF,#FF6CB6)" track="#EEE7FB" />
         </div>
@@ -97,7 +97,7 @@ export function Home({
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <Ring size={120} pct={d.caloriesPct} color={d.onTrack ? '#18C98A' : '#FF8A1E'}>
             <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 24, color: '#241544', lineHeight: 1 }}>{num(d.caloriesConsumed)}</span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8' }}>of {num(d.caloriesTarget)} kcal</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596' }}>of {num(d.caloriesTarget)} kcal</span>
           </Ring>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 11 }}>
             <Stat tint="#FFF0DC" stroke="#FF8A1E" value={num(d.caloriesBurned)} label="kcal burned" icon={<path d="M13 3 5 13h5l-1 8 8-11h-5l1-7Z" />} />
@@ -137,7 +137,7 @@ export function Home({
         <button onClick={onOpenCapture} style={{ width: '100%', background: '#fff', border: '2px dashed #E0D6F4', borderRadius: 22, padding: '22px 16px', cursor: 'pointer', marginBottom: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 30 }}>🍽️</span>
           <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>No meals yet today</span>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Snap your first to start tracking</span>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#6E6596' }}>Snap your first to start tracking</span>
         </button>
       ) : (
         <div style={{ background: '#fff', borderRadius: 22, padding: 6, marginBottom: 18, boxShadow: '0 5px 16px rgba(120,60,180,.06)' }}>
@@ -156,7 +156,7 @@ export function Home({
       {/* composer prompt */}
       <button onClick={onCompose} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: 'none', borderRadius: 20, padding: '13px 14px', marginBottom: 12, cursor: 'pointer', boxShadow: '0 5px 16px rgba(120,60,180,.06)' }}>
         <Avatar initial={(account.name[0] || 'Y').toUpperCase()} gradient={account.avatar} size={40} radius={13} />
-        <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Share a win, a tip, or a question…</span>
+        <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>Share a win, a tip, or a question…</span>
         <span style={{ width: 36, height: 36, borderRadius: 12, background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" /></svg>
         </span>
@@ -170,7 +170,7 @@ export function Home({
       </div>
 
       {shown.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '24px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Nothing here yet, be the first to share.</div>
+        <div style={{ textAlign: 'center', padding: '24px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>Nothing here yet, be the first to share.</div>
       ) : (
         shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
       )}
@@ -186,7 +186,7 @@ function Stat({ tint, stroke, value, label, icon }: { tint: string; stroke: stri
       </div>
       <div>
         <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, lineHeight: 1 }}>{value}</div>
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#9B91B8' }}>{label}</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#6E6596' }}>{label}</div>
       </div>
     </div>
   )
@@ -204,7 +204,7 @@ function MealRow({ meal, now, onDelete }: { meal: MealEntry; now: number; onDele
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8', textTransform: 'capitalize' }}>{meal.type} · {relativeTime(meal.at, now)}</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596', textTransform: 'capitalize' }}>{meal.type} · {relativeTime(meal.at, now)}</div>
       </div>
       <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', flex: 'none' }}>{num(meal.kcal)}</span>
       <button onClick={onDelete} aria-label="Delete meal" style={{ width: 28, height: 28, borderRadius: 9, background: '#F7F2FE', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
@@ -227,7 +227,7 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>{post.action}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#6E6596' }}>{post.action}</div>
         </div>
         {typeTag && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#7A719B', background: '#F4EFFF', padding: '4px 9px', borderRadius: 10, flex: 'none' }}>{typeTag}</span>}
         <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#C3BBD6', flex: 'none' }}>{relativeTime(post.at, now)}</span>
@@ -255,7 +255,7 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
             </div>
             <div>
-              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px' }}>New badge</div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px' }}>New badge</div>
               <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>{post.badge}</div>
             </div>
           </div>
@@ -275,10 +275,10 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
             {presentReactions.slice(0, 3).map((k) => (
               <span key={k} style={{ fontSize: 13 }}>{REACTION_BY_KIND[k].emoji}</span>
             ))}
-            {post.totalReactions > 0 && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>{post.totalReactions}</span>}
+            {post.totalReactions > 0 && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>{post.totalReactions}</span>}
           </div>
           {post.commentCount > 0 && (
-            <button onClick={() => onOpenPost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</button>
+            <button onClick={() => onOpenPost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</button>
           )}
         </div>
       )}

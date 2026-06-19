@@ -1,9 +1,25 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
+function clockLabel(): string {
+  const d = new Date()
+  let h = d.getHours() % 12
+  if (h === 0) h = 12
+  return `${h}:${d.getMinutes().toString().padStart(2, '0')}`
+}
+
+// Mock status bar for the desktop phone preview only. It is hidden on real
+// phones (see the .ios-statusbar media query), where the device draws the real
+// clock, wifi, and battery. The time is live so the preview never looks frozen.
 function StatusBar() {
   const c = '#241544'
+  const [time, setTime] = useState(clockLabel)
+  useEffect(() => {
+    const id = setInterval(() => setTime(clockLabel()), 15_000)
+    return () => clearInterval(id)
+  }, [])
   return (
     <div
+      className="ios-statusbar"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -25,7 +41,7 @@ function StatusBar() {
           color: c,
         }}
       >
-        9:41
+        {time}
       </span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         <svg width="19" height="12" viewBox="0 0 19 12">
@@ -123,6 +139,8 @@ export function IOSDevice({ children }: { children: ReactNode }) {
           }
           .ios-island { display: none; }
           .ios-home-indicator { display: none; }
+          /* The bar carries an inline display:flex, so this needs !important to win. */
+          .ios-statusbar { display: none !important; }
         }
       `}</style>
     </div>

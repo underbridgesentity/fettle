@@ -5,7 +5,7 @@ import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
 
-export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => void; onShareWin: () => void }) {
+export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings: () => void; onShareWin: () => void; onSnap: () => void }) {
   const { account } = useStore()
   const d = useDerived()
   if (!account || !d) return null
@@ -18,6 +18,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
   ]
 
   const completed = d.joinedChallenges.find((j) => j.complete)
+  const celebratory = !!completed || d.streak >= 3 || (d.caloriesConsumed > 0 && d.onTrack)
   const proud = completed
     ? { tag: 'You did it!', text: `Completed ${completed.challenge.name} 🎉` }
     : d.streak >= 3
@@ -25,6 +26,10 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
       : d.caloriesConsumed > 0 && d.onTrack
         ? { tag: 'Nice work', text: "You're on track today, keep it going." }
         : { tag: 'Your first win awaits', text: 'Snap a meal to start your streak.' }
+  // The CTA matches the moment: share a real win, or snap a meal when there is none yet.
+  const cta = celebratory
+    ? { label: 'Share your win', action: onShareWin }
+    : { label: 'Snap a meal', action: onSnap }
 
   const currentStageIdx = STAGES.findIndex((s) => s.name === d.stageName)
 
@@ -61,7 +66,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
         {stats.map((s) => (
           <div key={s.label} style={{ flex: 1, background: '#fff', borderRadius: 18, padding: '13px 6px', textAlign: 'center', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 22, color: s.color }}>{s.value}</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8' }}>{s.label}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596' }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -92,8 +97,8 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#fff', lineHeight: 1.15 }}>{proud.text}</div>
           </div>
         </div>
-        <button onClick={onShareWin} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: '#fff', color: '#FF4D6D', border: 'none', borderRadius: 15, padding: 12, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.1)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.1)' }}>
-          Share your win
+        <button onClick={cta.action} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: '#fff', color: '#FF4D6D', border: 'none', borderRadius: 15, padding: 12, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.1)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.1)' }}>
+          {cta.label}
         </button>
       </div>
 
@@ -108,7 +113,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
       {/* badges */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 2px' }}>
         <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Badge collection</span>
-        <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#9B91B8' }}>{d.unlockedCount} of {d.badgeTotal}</span>
+        <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596' }}>{d.unlockedCount} of {d.badgeTotal}</span>
       </div>
       <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
         {d.badges.map((b) => (
@@ -130,7 +135,7 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '18px 2px 12px' }}>
             <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Circle rewards</span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#9B91B8' }}>{d.circleBadges.filter((b) => b.unlocked).length} earned</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596' }}>{d.circleBadges.filter((b) => b.unlocked).length} earned</span>
           </div>
           <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
             {d.circleBadges.filter((b) => b.inCircle || b.unlocked).map((b) => (
@@ -160,10 +165,10 @@ function Stage({ name, state, isLast }: { name: string; state: 'done' | 'current
           <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#18C98A', margin: '0 auto 5px' }} />
         ) : (
           <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#E3DAF5', margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B91B8" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6596" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           </div>
         )}
-        <div style={{ fontFamily: state === 'current' ? 'Fredoka' : 'Nunito', fontWeight: state === 'current' ? 600 : 800, fontSize: state === 'current' ? 11 : 10, color: state === 'current' ? '#7C3AF6' : '#9B91B8' }}>{name}</div>
+        <div style={{ fontFamily: state === 'current' ? 'Fredoka' : 'Nunito', fontWeight: state === 'current' ? 600 : 800, fontSize: state === 'current' ? 11 : 10, color: state === 'current' ? '#7C3AF6' : '#6E6596' }}>{name}</div>
       </div>
       {!isLast && <div style={{ width: 18, height: 2, background: '#E3DAF5', flex: 'none', marginBottom: 18 }} />}
     </>
