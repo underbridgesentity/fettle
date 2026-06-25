@@ -115,30 +115,69 @@ ${list}`
     },
   }
 
-  try {
-    const r = await fetch(`${ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    if (!r.ok) return json({ error: `gemini ${r.status}`, items: [] })
-    const out = await r.json()
-    const text: string = out?.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"items":[]}'
-    const parsed = JSON.parse(text) as { items?: Array<Record<string, unknown>> }
-    const items = (parsed.items ?? [])
-      .map((i) => ({
-        name: String(i.name ?? '').trim().slice(0, 80),
-        emoji: typeof i.emoji === 'string' ? i.emoji.slice(0, 8) : '',
-        servings: clampNum(i.servings, 1),
-        kcal: clampNum(i.kcal, 0),
-        protein: clampNum(i.protein, 0),
-        carbs: clampNum(i.carbs, 0),
-        fat: clampNum(i.fat, 0),
-        catalogId: typeof i.catalogId === 'string' && ids.has(i.catalogId) ? i.catalogId : undefined,
-      }))
-      .filter((i) => i.name)
-    return json({ items })
-  } catch (e) {
-    return json({ error: String(e), items: [] })
+  // Gemini intermittently returns 503 "overloaded" / 429, or a candidate with no
+  // text (a transient safety/early stop). These are retriable: a quick second
+  // attempt almost always succeeds, so we do NOT want to surface them as "no food
+  // found". Distinguish three outcomes for the client: ok | empty | unavailable.
+  const g = await generate(payload, apiKey)
+
+  if (g.text != null) {
+    try {
+      const parsed = JSON.parse(g.text) as { items?: Array<Record<string, unknown>> }
+      const items = (parsed.items ?? [])
+        .map((i) => ({
+          name: String(i.name ?? '').trim().slice(0, 80),
+          emoji: typeof i.emoji === 'string' ? i.emoji.slice(0, 8) : '',
+          servings: clampNum(i.servings, 1),
+          kcal: clampNum(i.kcal, 0),
+          protein: clampNum(i.protein, 0),
+          carbs: clampNum(i.carbs, 0),
+          fat: clampNum(i.fat, 0),
+          catalogId: typeof i.catalogId === 'string' && ids.has(i.catalogId) ? i.catalogId : undefined,
+        }))
+        .filter((i) => i.name)
+      // The model ran: items present -> ok, none -> genuinely no food in frame.
+      return json({ items, status: items.length ? 'ok' : 'empty' })
+    } catch (e) {
+      return json({ items: [], status: 'unavailable', error: `parse ${e}` })
+    }
   }
+
+  // Every attempt failed in a retriable way: tell the client to offer "try again"
+  // rather than claiming the photo has no food.
+  return json({ items: [], status: 'unavailable', error: g.error })
 })
+
+// Calls Gemini with up to 3 attempts, retrying transient failures (HTTP 429/5xx,
+// network blips, or an empty candidate) with a short backoff. Returns the raw
+// response text on success, or an error string if every attempt was transient.
+const RETRIABLE = new Set([408, 429, 500, 502, 503, 504])
+
+async function generate(payload: unknown, apiKey: string): Promise<{ text?: string; error?: string }> {
+  let last = 'unknown'
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await new Promise((r) => setTimeout(r, attempt === 1 ? 700 : 1600))
+    let r: Response
+    try {
+      r = await fetch(`${ENDPOINT}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+    } catch (e) {
+      last = `network ${e}`
+      continue
+    }
+    if (!r.ok) {
+      last = `gemini ${r.status}`
+      if (RETRIABLE.has(r.status)) continue
+      return { error: last } // hard error (e.g. 400/401/403): retrying will not help
+    }
+    const out = await r.json().catch(() => null)
+    const text = out?.candidates?.[0]?.content?.parts?.[0]?.text
+    if (typeof text === 'string' && text) return { text }
+    // No usable text: blocked / early stop. Retriable.
+    last = `empty candidate (${out?.candidates?.[0]?.finishReason ?? '?'})`
+  }
+  return { error: last }
+}

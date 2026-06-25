@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { FOOD_BY_ID, QUICK_ADD_IDS, searchFoods, type Food } from '../lib/foods'
-import { frameFromVideo, dataUrlFromFile } from '../lib/image'
+import { frameFromVideo, dataUrlFromFile, type Frames } from '../lib/image'
 import { mealTypeFor } from '../lib/selectors'
 import { num } from '../lib/format'
 import { actions } from '../lib/store'
-import { analyzeMeal, analyzerAvailable } from '../lib/analyze'
+import { analyzeMeal, analyzerAvailable, type AnalyzeResult, type AnalyzeStatus } from '../lib/analyze'
 import type { LoggedFood, MealType } from '../lib/types'
 import { T, card, inset, softTile } from '../lib/theme'
 
@@ -42,33 +42,48 @@ function mergeDetected(prev: LoggedFood[], detected: LoggedFood[]): LoggedFood[]
   return [...byId.values()]
 }
 
+// The outcome of a scan, used to drive the right banner: a count when foods were
+// found, 'empty' when the model genuinely saw no food, 'unavailable' when the
+// scan could not complete (worth retrying), or null when logged manually.
+type Scan = { status: AnalyzeStatus; count: number } | null
+
 export function Capture({ onClose }: { onClose: () => void }) {
   const [stage, setStage] = useState<'view' | 'analyzing' | 'log'>('view')
   const [photo, setPhoto] = useState<string | undefined>()
+  // The larger, higher-quality frame sent to the recognizer (kept so we can
+  // re-run the scan without making the user retake the photo).
+  const [analysisPhoto, setAnalysisPhoto] = useState<string | undefined>()
   const [items, setItems] = useState<LoggedFood[]>([])
   const [type, setType] = useState<MealType>(mealTypeFor())
-  // null = logged manually (no analysis); a number = the analyzer ran and found N foods.
-  const [detected, setDetected] = useState<number | null>(null)
+  const [scan, setScan] = useState<Scan>(null)
+
+  // Run (or re-run) the recognizer on the captured frame, showing the analyzing
+  // screen while it works. A transient failure comes back as 'unavailable' so the
+  // log screen can offer "Scan again" instead of claiming there is no food.
+  async function runScan(analysisImg: string) {
+    setStage('analyzing')
+    let result: AnalyzeResult = { items: [], status: 'unavailable' }
+    try {
+      result = await Promise.race([
+        analyzeMeal(analysisImg),
+        new Promise<AnalyzeResult>((resolve) => setTimeout(() => resolve({ items: [], status: 'unavailable' }), 30000)),
+      ])
+    } catch {
+      result = { items: [], status: 'unavailable' }
+    }
+    if (result.items.length) setItems((prev) => mergeDetected(prev, result.items))
+    setScan({ status: result.status, count: result.items.length })
+    setStage('log')
+  }
 
   // A snapped photo shows a dedicated "analyzing" screen first (when the analyzer
   // is on), then opens the log with whatever it found pre-filled. With the
   // analyzer off, it goes straight to manual logging.
-  async function onCaptured(p: string) {
-    setPhoto(p)
-    if (!analyzerAvailable()) { setStage('log'); return }
-    setStage('analyzing')
-    let found: LoggedFood[] = []
-    try {
-      found = await Promise.race([
-        analyzeMeal(p),
-        new Promise<LoggedFood[]>((resolve) => setTimeout(() => resolve([]), 20000)),
-      ])
-    } catch {
-      found = []
-    }
-    if (found.length) setItems((prev) => mergeDetected(prev, found))
-    setDetected(found.length)
-    setStage('log')
+  async function onCaptured(frames: Frames) {
+    setPhoto(frames.display)
+    setAnalysisPhoto(frames.analysis)
+    if (!analyzerAvailable()) { setScan(null); setStage('log'); return }
+    runScan(frames.analysis)
   }
 
   function addFood(food: Food) {
@@ -112,11 +127,11 @@ export function Capture({ onClose }: { onClose: () => void }) {
         <Viewfinder
           onClose={onClose}
           onCaptured={onCaptured}
-          onManual={() => { setPhoto(undefined); setDetected(null); setStage('log') }}
+          onManual={() => { setPhoto(undefined); setAnalysisPhoto(undefined); setScan(null); setStage('log') }}
         />
       )}
       {stage === 'analyzing' && photo && (
-        <Analyzing photo={photo} onManual={() => { setDetected(null); setStage('log') }} />
+        <Analyzing photo={photo} onManual={() => { setScan(null); setStage('log') }} />
       )}
       {stage === 'log' && (
         <>
@@ -125,7 +140,8 @@ export function Capture({ onClose }: { onClose: () => void }) {
             type={type}
             setType={setType}
             items={items}
-            detected={detected}
+            scan={scan}
+            onRescan={() => { if (analysisPhoto) runScan(analysisPhoto) }}
             onRetake={() => setStage('view')}
             onClose={onClose}
             addFood={addFood}
@@ -145,7 +161,7 @@ function Viewfinder({
   onManual,
 }: {
   onClose: () => void
-  onCaptured: (photo: string) => void
+  onCaptured: (frames: Frames) => void
   onManual: () => void
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -274,7 +290,7 @@ function Analyzing({ photo, onManual }: { photo: string; onManual: () => void })
 
 // ── Log / food search ─────────────────────────────────────────────────────────
 function LogScreen({
-  photo, type, setType, items, onRetake, onClose, addFood, setServings, detected,
+  photo, type, setType, items, onRetake, onClose, addFood, setServings, scan, onRescan,
 }: {
   photo?: string
   type: MealType
@@ -284,7 +300,8 @@ function LogScreen({
   onClose: () => void
   addFood: (f: Food) => void
   setServings: (id: string, s: number) => void
-  detected?: number | null
+  scan: Scan
+  onRescan: () => void
 }) {
   const [query, setQuery] = useState('')
   const results = useMemo(() => searchFoods(query, 24), [query])
@@ -305,20 +322,31 @@ function LogScreen({
       </div>
 
       <div style={{ padding: '16px 18px 24px' }}>
-        {detected != null && detected > 0 && (
+        {scan && scan.count > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...softTile(T.green), padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>✨</span>
             <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.green, lineHeight: 1.3 }}>
-              Found {detected} item{detected === 1 ? '' : 's'} from your photo. Check it over, then add or edit below.
+              Found {scan.count} item{scan.count === 1 ? '' : 's'} from your photo. Check it over, then add or edit below.
             </span>
           </div>
         )}
-        {detected === 0 && (
+        {scan && scan.count === 0 && scan.status === 'empty' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...softTile(T.amber), padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>🔍</span>
             <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.amber, lineHeight: 1.3 }}>
-              Couldn't auto-detect this one. Search and add the foods below.
+              No food spotted in this photo. Search and add it below.
             </span>
+          </div>
+        )}
+        {scan && scan.count === 0 && scan.status === 'unavailable' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, ...softTile(T.rose), padding: '12px 14px', marginBottom: 14 }}>
+            <span style={{ fontSize: 18, flex: 'none' }}>📡</span>
+            <span style={{ flex: 1, fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.rose, lineHeight: 1.3 }}>
+              The scanner was busy for a moment. Try again, or add it below.
+            </span>
+            <button onClick={onRescan} className="pressable" style={{ flex: 'none', background: T.rose, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: '8px 14px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+              Scan again
+            </button>
           </div>
         )}
         {/* meal type */}

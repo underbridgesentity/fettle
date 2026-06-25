@@ -1,11 +1,17 @@
-// Downscales a captured image to a small JPEG data-URL so meal photos fit inside
-// localStorage. (A backend would upload the full-resolution blob instead.)
+// Produces two JPEGs from a captured frame: a small one to STORE (meal photos
+// have to fit inside localStorage) and a larger, higher-quality one to ANALYZE
+// (the recognizer does much better with detail, e.g. small foods or a nutrition
+// label). A real backend would upload the full-resolution blob instead.
 
-const MAX = 360
-const QUALITY = 0.55
+const STORE_MAX = 360
+const STORE_QUALITY = 0.55
+const ANALYZE_MAX = 1024
+const ANALYZE_QUALITY = 0.82
 
-function drawToDataUrl(source: CanvasImageSource, w: number, h: number): string {
-  const scale = Math.min(1, MAX / Math.max(w, h))
+export type Frames = { display: string; analysis: string }
+
+function draw(source: CanvasImageSource, w: number, h: number, max: number, quality: number): string {
+  const scale = Math.min(1, max / Math.max(w, h))
   const cw = Math.round(w * scale)
   const ch = Math.round(h * scale)
   const canvas = document.createElement('canvas')
@@ -13,20 +19,27 @@ function drawToDataUrl(source: CanvasImageSource, w: number, h: number): string 
   canvas.height = ch
   const ctx = canvas.getContext('2d')!
   ctx.drawImage(source, 0, 0, cw, ch)
-  return canvas.toDataURL('image/jpeg', QUALITY)
+  return canvas.toDataURL('image/jpeg', quality)
 }
 
-export function frameFromVideo(video: HTMLVideoElement): string {
-  return drawToDataUrl(video, video.videoWidth || MAX, video.videoHeight || MAX)
+function frames(source: CanvasImageSource, w: number, h: number): Frames {
+  return {
+    display: draw(source, w, h, STORE_MAX, STORE_QUALITY),
+    analysis: draw(source, w, h, ANALYZE_MAX, ANALYZE_QUALITY),
+  }
 }
 
-export function dataUrlFromFile(file: File): Promise<string> {
+export function frameFromVideo(video: HTMLVideoElement): Frames {
+  return frames(video, video.videoWidth || STORE_MAX, video.videoHeight || STORE_MAX)
+}
+
+export function dataUrlFromFile(file: File): Promise<Frames> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
     const img = new Image()
     img.onload = () => {
       try {
-        resolve(drawToDataUrl(img, img.naturalWidth, img.naturalHeight))
+        resolve(frames(img, img.naturalWidth, img.naturalHeight))
       } catch (e) {
         reject(e)
       } finally {

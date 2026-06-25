@@ -76,12 +76,18 @@ function toLogged(d: Detected): LoggedFood | null {
   }
 }
 
+// ok = foods found; empty = the model ran but saw no food; unavailable = the
+// scan could not complete (the service was busy or errored, so it is worth
+// retrying). The UI shows a different message and affordance for each.
+export type AnalyzeStatus = 'ok' | 'empty' | 'unavailable'
+export type AnalyzeResult = { items: LoggedFood[]; status: AnalyzeStatus }
+
 /**
  * Identify the foods in a meal photo and estimate their calories. Works for any
  * meal, not just catalog foods. Always resolves (never throws).
  */
-export async function analyzeMeal(imageDataUrl: string): Promise<LoggedFood[]> {
-  if (!url || !key) return []
+export async function analyzeMeal(imageDataUrl: string): Promise<AnalyzeResult> {
+  if (!url || !key) return { items: [], status: 'unavailable' }
   try {
     const catalog = FOODS.map((f) => ({ id: f.id, name: f.name, serving: f.serving }))
     const res = await fetch(`${url}/functions/v1/analyze-meal`, {
@@ -89,12 +95,13 @@ export async function analyzeMeal(imageDataUrl: string): Promise<LoggedFood[]> {
       headers: { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${key}` },
       body: JSON.stringify({ image: imageDataUrl, catalog }),
     })
-    if (!res.ok) return []
-    const data = (await res.json()) as { items?: Detected[] }
-    return (data.items ?? [])
-      .map(toLogged)
-      .filter((x): x is LoggedFood => x !== null)
+    if (!res.ok) return { items: [], status: 'unavailable' }
+    const data = (await res.json()) as { items?: Detected[]; status?: AnalyzeStatus }
+    const items = (data.items ?? []).map(toLogged).filter((x): x is LoggedFood => x !== null)
+    // Trust the server's status, but never call it "empty" when we have items.
+    const status: AnalyzeStatus = items.length ? 'ok' : data.status === 'empty' ? 'empty' : 'unavailable'
+    return { items, status }
   } catch {
-    return []
+    return { items: [], status: 'unavailable' }
   }
 }
