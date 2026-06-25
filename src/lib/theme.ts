@@ -23,8 +23,8 @@ export const T = {
   ink: '#FFFFFF', // readable text on saturated / accent fills
 
   // primary + a playful, colourful spectrum
-  accent: '#FF6F57', // warm, friendly coral (primary)
-  accentDim: 'rgba(255,111,87,0.15)',
+  accent: '#2FC36B', // fresh, friendly green (primary)
+  accentDim: 'rgba(47,195,107,0.15)',
   blue: '#4F9DF7',
   amber: '#FF9F43',
   green: '#2FC36B',

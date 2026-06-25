@@ -54,11 +54,11 @@ export function TabBar({
             width: 60,
             height: 60,
             borderRadius: 22,
-            background: 'linear-gradient(160deg,#ff8a6a,#fb5e44)',
+            background: 'linear-gradient(160deg,#4cd884,#23b35f)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 10px 22px rgba(255,111,87,.42), 0 0 0 5px #F1EDE4',
+            boxShadow: '0 10px 22px rgba(47,195,107,.42), 0 0 0 5px #F1EDE4',
             marginTop: -30,
           }}
         >
