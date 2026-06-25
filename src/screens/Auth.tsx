@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GOAL_OPTIONS } from '../data'
 import { Mascot } from '../components/Mascot'
+import { PipBubble } from '../components/PipBubble'
 import { actions, type ApiError } from '../lib/store'
 import { api, type SocialProvider } from '../lib/api'
 import { T, card, inset } from '../lib/theme'
@@ -248,17 +249,19 @@ function Welcome() {
 }
 
 function GoalPicker({ goal, onPick }: { goal: Goal; onPick: (g: Goal) => void }) {
+  const [touched, setTouched] = useState(false)
+  const label = GOAL_OPTIONS.find((g) => g.id === goal)?.label ?? ''
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
-      <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 6 }}>What's your goal?</div>
-      <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim, marginBottom: 22 }}>Pick one to start, you can change it anytime.</div>
+      <PipBubble mood={touched ? 'cheer' : 'happy'} text={touched ? `${label}? Love it. I'll tailor things to that.` : 'What brings you to Pippin? Pick the one that fits, you can change it later.'} />
+      <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 22 }}>What's your goal?</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         {GOAL_OPTIONS.map((g) => {
           const sel = goal === g.id
           return (
             <button
               key={g.id}
-              onClick={() => onPick(g.id as Goal)}
+              onClick={() => { onPick(g.id as Goal); setTouched(true) }}
               style={{ display: 'flex', alignItems: 'center', gap: 14, background: sel ? T.accentDim : T.glass, border: `2.5px solid ${sel ? g.color : T.line}`, borderRadius: 20, padding: '14px 16px', cursor: 'pointer', textAlign: 'left' }}
             >
               <div style={{ width: 44, height: 44, borderRadius: 14, background: g.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
@@ -283,6 +286,7 @@ function HowItWorks() {
   ]
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
+      <PipBubble mood="proud" text="Here's how I'll help you out." />
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 22 }}>How Pippin works</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, textAlign: 'left' }}>
         {rows.map((r) => (
@@ -318,6 +322,7 @@ function SignupForm({
 }) {
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
+      <PipBubble text="Last step. Let's save your progress so nothing slips away." />
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 6 }}>Create your account</div>
       <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim, marginBottom: 22 }}>Your progress saves on this device.</div>
       <Field label="Name" value={name} onChange={setName} placeholder="Your name" invalid={err?.field === 'name'} autoFocus />
