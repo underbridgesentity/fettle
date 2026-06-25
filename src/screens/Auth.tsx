@@ -123,16 +123,17 @@ export function Auth() {
         {busy ? 'Creating account…' : CTA[step]}
       </PrimaryButton>
 
-      {step === 0 && (
+      {/* Account creation lives on the final step, so everyone picks a goal
+          first, whether they sign up with email or with Google/Apple. */}
+      {step === 3 && hasSocial && (
         <>
-          {hasSocial && (
-            <>
-              <Divider />
-              <SocialButtons busy={busy} onPick={social} />
-            </>
-          )}
-          <LinkButton onClick={() => { setMode('login'); setErr(null) }}>I already have an account</LinkButton>
+          <Divider />
+          <SocialButtons busy={busy} onPick={social} />
         </>
+      )}
+
+      {step === 0 && (
+        <LinkButton onClick={() => { setMode('login'); setErr(null) }}>I already have an account</LinkButton>
       )}
     </Shell>
   )
