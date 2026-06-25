@@ -94,8 +94,8 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       <div style={{ ...card, position: 'relative', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
         <Confetti count={24} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', ...softTile(T.accent), display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', border: `1px solid ${T.lineSoft}` }}>
-            <svg width="34" height="34" viewBox="0 0 24 24" fill={T.accent}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+          <div style={{ flex: 'none' }}>
+            <Mascot stage="Sprout" size={64} mood={celebratory ? 'cheer' : 'happy'} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ ...eyebrow, letterSpacing: '.5px' }}>{proud.tag}</div>

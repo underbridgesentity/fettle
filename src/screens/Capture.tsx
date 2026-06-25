@@ -7,6 +7,7 @@ import { actions } from '../lib/store'
 import { analyzeMeal, analyzerAvailable, type AnalyzeResult, type AnalyzeStatus } from '../lib/analyze'
 import type { LoggedFood, MealType } from '../lib/types'
 import { T, card, inset, softTile } from '../lib/theme'
+import { Mascot } from '../components/Mascot'
 
 const MEAL_TYPES: { id: MealType; label: string }[] = [
   { id: 'breakfast', label: 'Breakfast' },
@@ -340,7 +341,7 @@ function LogScreen({
         )}
         {scan && scan.count === 0 && scan.status === 'unavailable' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, ...softTile(T.rose), padding: '12px 14px', marginBottom: 14 }}>
-            <span style={{ fontSize: 18, flex: 'none' }}>📡</span>
+            <span style={{ flex: 'none', marginTop: -2 }}><Mascot stage="Sprout" size={36} mood="concerned" /></span>
             <span style={{ flex: 1, fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.rose, lineHeight: 1.3 }}>
               The scanner was busy for a moment. Try again, or add it below.
             </span>

@@ -163,7 +163,12 @@ export function Home({
           {d.quest.claimable && (
             <button onClick={() => actions.claimQuest()} className="pressable" style={{ background: T.violet, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: '8px 18px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Claim</button>
           )}
-          {d.quest.claimed && <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.violet }}>Claimed ✓</span>}
+          {d.quest.claimed && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Mascot stage="Sprout" size={26} mood="cheer" />
+              <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.violet }}>Claimed!</span>
+            </span>
+          )}
         </div>
       </div>
 
@@ -177,9 +182,9 @@ export function Home({
       </div>
       {d.todayMeals.length === 0 ? (
         <button onClick={onOpenCapture} style={{ width: '100%', ...card, border: `1px dashed ${T.line}`, padding: '22px 16px', cursor: 'pointer', marginBottom: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 30 }}>🍽️</span>
+          <Mascot stage="Sprout" size={62} mood="happy" />
           <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 16, color: T.text }}>No meals yet today</span>
-          <span style={{ fontFamily: T.body, fontWeight: 600, fontSize: 13, color: T.dim }}>Snap your first to start tracking</span>
+          <span style={{ fontFamily: T.body, fontWeight: 600, fontSize: 13, color: T.dim }}>Snap your first and I'll count it for you</span>
         </button>
       ) : (
         <div style={{ ...card, padding: 6, marginBottom: 18 }}>
@@ -246,7 +251,7 @@ function CoachCard({ ctx }: { ctx: CoachCtx }) {
     <div style={{ ...card, padding: 18, marginBottom: 14 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: plan ? 12 : 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>🧭</span>
+          <Mascot stage="Sprout" size={28} mood="happy" />
           <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 18, color: T.text }}>Your plan today</span>
           <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 9, color: T.accent, background: T.accentDim, padding: '3px 7px', borderRadius: 8, letterSpacing: '.4px' }}>AI COACH</span>
         </div>
@@ -259,8 +264,8 @@ function CoachCard({ ctx }: { ctx: CoachCtx }) {
 
       {!plan && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 12 }}>
-          <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid rgba(40,33,22,0.12)', borderTopColor: T.accent, display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
-          <span style={{ fontFamily: T.body, fontWeight: 600, fontSize: 14, color: T.dim }}>Building your plan...</span>
+          <Mascot stage="Sprout" size={34} mood="thinking" />
+          <span style={{ fontFamily: T.body, fontWeight: 600, fontSize: 14, color: T.dim }}>Putting your plan together...</span>
         </div>
       )}
 
