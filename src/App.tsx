@@ -3,6 +3,7 @@ import { IOSDevice } from './components/IOSDevice'
 import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
 import { Mascot } from './components/Mascot'
+import { CelebrationOverlay } from './components/Celebration'
 import { T } from './lib/theme'
 import { Home } from './screens/Home'
 import { Quests } from './screens/Quests'
@@ -33,7 +34,7 @@ export function App() {
 }
 
 function Root() {
-  const { status, account, data, toast } = useStore()
+  const { status, account, data, toast, celebration } = useStore()
   const [tab, setTab] = useState<Tab>('home')
   const [capture, setCapture] = useState(false)
   const [activity, setActivity] = useState(false)
@@ -125,6 +126,7 @@ function Root() {
       <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />
 
       {toast && <Toast key={toast.key} message={toast.msg} />}
+      {celebration && <CelebrationOverlay data={celebration} onDismiss={() => actions.dismissCelebration()} />}
     </>
   )
 }

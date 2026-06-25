@@ -6,7 +6,7 @@
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
 import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
 import { storage } from './storage'
-import { BADGES, XP, earnedBadges, estimateBurn, levelFromXp, stepsToKm } from './gamification'
+import { BADGES, XP, computeStreak, earnedBadges, estimateBurn, levelFromXp, stageForLevel, stepsToKm } from './gamification'
 import { CIRCLE_BADGE_BY_ID, earnedCircleBadges } from './selectors'
 import { CHALLENGE_BY_ID, CIRCLE_BY_ID, MEMBER_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
 import { dayKey, todayKey } from './format'
@@ -37,16 +37,22 @@ const POST_ACTION: Record<PostType, string> = {
   update: 'shared an update',
 }
 
+// A big, earned moment that warrants a full-screen celebration (confetti +
+// cheering Pip), as opposed to a quiet toast.
+export type Celebration = { key: number; kind: 'level' | 'badge' | 'streak'; title: string; subtitle: string; stage: string }
+
 type StoreState = {
   status: 'loading' | 'ready'
   account: Account | null
   data: UserState | null
   community: SeedMember[] | null
   toast: { msg: string; key: number } | null
+  celebration: Celebration | null
 }
 
-let current: StoreState = { status: 'loading', account: null, data: null, community: null, toast: null }
+let current: StoreState = { status: 'loading', account: null, data: null, community: null, toast: null, celebration: null }
 let toastKey = 0
+let celebrationKey = 0
 let toastTimer: ReturnType<typeof setTimeout> | undefined
 
 const listeners = new Set<() => void>()
@@ -85,7 +91,7 @@ async function init() {
         data = freshUserData(account, goal)
         void api.saveState(account.id, data)
       }
-      current = { status: 'ready', account, data, community: null, toast: null }
+      current = { status: 'ready', account, data, community: null, toast: null, celebration: null }
       emit()
       refreshCommunity(account.id)
       return
@@ -93,7 +99,7 @@ async function init() {
   } catch {
     /* fall through to signed-out */
   }
-  current = { status: 'ready', account: null, data: null, community: null, toast: null }
+  current = { status: 'ready', account: null, data: null, community: null, toast: null, celebration: null }
   emit()
 }
 
@@ -161,6 +167,14 @@ function setToast(msg: string) {
   }, 2600)
 }
 
+// A celebration stays up until the user taps to dismiss (it is a moment to
+// savour), so unlike a toast it has no auto-timeout.
+function setCelebration(c: Omit<Celebration, 'key'>) {
+  celebrationKey += 1
+  current = { ...current, celebration: { ...c, key: celebrationKey } }
+  emit()
+}
+
 function makeMyFeed(account: Account, kind: FeedKind, action: string, extra?: Partial<FeedEntry>): FeedEntry {
   return {
     id: `mf_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e4).toString(36)}`,
@@ -188,11 +202,16 @@ function commit(next: UserState, opts?: { toast?: string }) {
   let data = next
   const feed = [...data.feed]
   let headline: string | undefined
+  // The single biggest moment in this commit, shown as a full-screen
+  // celebration (level-up beats a badge beats a streak milestone).
+  let celebration: Omit<Celebration, 'key'> | undefined
+  const stageName = stageForLevel(newLevel).current.name
 
   // Level-up
   if (newLevel > prevLevel) {
     feed.unshift(makeMyFeed(account, 'level', `reached level ${newLevel}`))
     headline = `Level up! You're level ${newLevel} ⚡`
+    celebration = { kind: 'level', title: 'Level up!', subtitle: `You're now level ${newLevel}, ${stageName}`, stage: stageName }
   }
 
   // Badge unlocks (derived → persist unlock timestamps so we only fire once)
@@ -210,6 +229,16 @@ function commit(next: UserState, opts?: { toast?: string }) {
     data = { ...data, badges }
     const firstName = nameOf(freshlyEarned[0])
     if (firstName && !headline) headline = `Badge unlocked: ${firstName} 🏅`
+    if (firstName && !celebration) celebration = { kind: 'badge', title: 'Badge unlocked!', subtitle: firstName, stage: stageName }
+  }
+
+  // Streak milestones that do not already have their own badge (7 and 14 do).
+  if (!celebration) {
+    const now = Date.now()
+    const prevStreak = current.data ? computeStreak(current.data, now) : 0
+    const newStreak = computeStreak(data, now)
+    const hit = [3, 30, 100].find((m) => newStreak >= m && prevStreak < m)
+    if (hit) celebration = { kind: 'streak', title: `${hit}-day streak!`, subtitle: 'Keep the fire going', stage: stageName }
   }
 
   data = { ...data, feed: feed.slice(0, 60) }
@@ -217,12 +246,21 @@ function commit(next: UserState, opts?: { toast?: string }) {
   void api.saveState(account.id, data)
   emit()
 
-  const msg = headline ?? opts?.toast
-  if (msg) setToast(msg)
+  // A big moment supersedes the quiet "+XP" toast for this commit.
+  if (celebration) setCelebration(celebration)
+  else {
+    const msg = headline ?? opts?.toast
+    if (msg) setToast(msg)
+  }
 }
 
 // ── Actions ─────────────────────────────────────────────────────────────────
 export const actions = {
+  dismissCelebration() {
+    current = { ...current, celebration: null }
+    emit()
+  },
+
   async signUp(input: { name: string; email: string; password: string; goal: Goal }) {
     const account = await api.signUp(input)
     const loaded = await api.loadState(account.id)
