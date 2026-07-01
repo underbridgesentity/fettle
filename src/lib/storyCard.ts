@@ -280,3 +280,72 @@ export async function renderMilestoneStory(canvas: HTMLCanvasElement, opts: Mile
   ctx.fillText('Pippin', W / 2, H - 130)
   ctx.textAlign = 'left'
 }
+
+export type ActivityStoryData = { kindLabel: string; emoji: string; minutes: number; km?: number; steps?: number; kcal: number }
+export type ActivityOptions = { activity: ActivityStoryData; name: string; showName: boolean }
+
+export async function renderActivityStory(canvas: HTMLCanvasElement, opts: ActivityOptions) {
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+  try {
+    await Promise.all([document.fonts.load(`600 100px ${DISPLAY}`), document.fonts.load(`700 100px ${BODY}`)])
+  } catch {
+    /* fall back to system fonts */
+  }
+
+  const a = opts.activity
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H)
+  bg.addColorStop(0, '#E7F0FB')
+  bg.addColorStop(1, '#F1EDE4')
+  ctx.fillStyle = bg
+  ctx.fillRect(0, 0, W, H)
+
+  ctx.textAlign = 'center'
+
+  // Emoji hero in a soft disc.
+  const cy = 520
+  const R = 300
+  ctx.fillStyle = '#FFFFFF'
+  ctx.beginPath()
+  ctx.arc(W / 2, cy, R, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.font = '300px sans-serif'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(a.emoji, W / 2, cy + 12)
+  ctx.textBaseline = 'alphabetic'
+
+  let y = cy + R + 150
+  ctx.fillStyle = DIM
+  ctx.font = `700 34px ${BODY}`
+  ctx.fillText(`${a.kindLabel.toUpperCase()}  ·  PIPPIN`, W / 2, y)
+
+  const hero = a.km ? `${a.km} km` : a.steps ? `${a.steps.toLocaleString()} steps` : `${a.minutes} min`
+  y += 160
+  ctx.fillStyle = INK
+  ctx.font = `700 170px ${DISPLAY}`
+  ctx.fillText(hero, W / 2, y)
+
+  const parts: string[] = []
+  if (a.km && a.minutes) parts.push(`${a.minutes} min`)
+  if (a.kcal) parts.push(`${a.kcal} kcal`)
+  if (parts.length) {
+    y += 82
+    ctx.fillStyle = DIM
+    ctx.font = `600 48px ${BODY}`
+    ctx.fillText(parts.join('  ·  '), W / 2, y)
+  }
+  if (opts.showName) {
+    y += 74
+    ctx.fillStyle = DIM
+    ctx.font = `700 42px ${BODY}`
+    ctx.fillText(`${firstName(opts.name)} on Pippin`, W / 2, y)
+  }
+
+  ctx.fillStyle = ACCENT
+  ctx.font = `700 74px ${DISPLAY}`
+  ctx.fillText('Pippin', W / 2, H - 130)
+  ctx.textAlign = 'left'
+}

@@ -98,10 +98,13 @@ create policy "send friend requests"
   on public.friendships for insert to authenticated
   with check (auth.uid() = requester);
 
+-- Only the addressee can act on a request (accept it). The requester cannot
+-- self-accept; cancelling is handled by the delete policy below.
 drop policy if exists "respond to friend requests" on public.friendships;
 create policy "respond to friend requests"
   on public.friendships for update to authenticated
-  using (auth.uid() = addressee or auth.uid() = requester);
+  using (auth.uid() = addressee)
+  with check (auth.uid() = addressee);
 
 drop policy if exists "remove friendships" on public.friendships;
 create policy "remove friendships"

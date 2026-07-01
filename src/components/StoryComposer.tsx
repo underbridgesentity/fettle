@@ -3,12 +3,15 @@
 // chooses exactly what appears on it before saving or sharing, so nothing lands
 // on a screenshot-able image without their sign-off.
 import { useEffect, useRef, useState } from 'react'
-import { renderMealStory, renderMilestoneStory } from '../lib/storyCard'
+import { renderMealStory, renderMilestoneStory, renderActivityStory, type ActivityStoryData } from '../lib/storyCard'
 import { T } from '../lib/theme'
 import type { MealEntry } from '../lib/types'
 import type { Celebration } from '../lib/store'
 
-export type StoryInput = { type: 'meal'; meal: MealEntry } | { type: 'milestone'; celebration: Celebration }
+export type StoryInput =
+  | { type: 'meal'; meal: MealEntry }
+  | { type: 'milestone'; celebration: Celebration }
+  | { type: 'activity'; activity: ActivityStoryData }
 
 export function StoryComposer({ story, name, onClose }: { story: StoryInput | null; name: string; onClose: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -22,8 +25,9 @@ export function StoryComposer({ story, name, onClose }: { story: StoryInput | nu
     let stale = false
     setRendering(true)
     const done = () => { if (!stale) setRendering(false) }
-    const p = story.type === 'meal'
-      ? renderMealStory(canvasRef.current, { meal: story.meal, name, showMacros, showName })
+    const p =
+      story.type === 'meal' ? renderMealStory(canvasRef.current, { meal: story.meal, name, showMacros, showName })
+      : story.type === 'activity' ? renderActivityStory(canvasRef.current, { activity: story.activity, name, showName })
       : renderMilestoneStory(canvasRef.current, { celebration: story.celebration, name, showName })
     p.catch(() => {}).finally(done)
     return () => { stale = true }

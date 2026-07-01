@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Sheet } from '../components/Sheet'
+import { StoryComposer } from '../components/StoryComposer'
 import { estimateBurn, stepsToKm } from '../lib/gamification'
 import { num } from '../lib/format'
-import { actions } from '../lib/store'
+import { actions, useStore } from '../lib/store'
 import { T, softTile } from '../lib/theme'
+import type { ActivityStoryData } from '../lib/storyCard'
 import type { ActivityKind } from '../lib/types'
 
 const KINDS: { id: ActivityKind; label: string; emoji: string; usesDistance: boolean }[] = [
@@ -15,10 +17,13 @@ const KINDS: { id: ActivityKind; label: string; emoji: string; usesDistance: boo
 ]
 
 export function AddActivity({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { account } = useStore()
   const [kind, setKind] = useState<ActivityKind>('run')
   const [minutes, setMinutes] = useState('30')
   const [km, setKm] = useState('5')
   const [steps, setSteps] = useState('5000')
+  const [logged, setLogged] = useState<ActivityStoryData | null>(null)
+  const [sharing, setSharing] = useState(false)
 
   const def = KINDS.find((k) => k.id === kind)!
   const mins = Math.max(0, parseInt(minutes) || 0)
@@ -30,20 +35,44 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
       ? Math.round(stepCount * 0.04)
       : estimateBurn(kind, mins, def.usesDistance ? dist : 0)
 
+  function close() {
+    setLogged(null)
+    setSharing(false)
+    onClose()
+  }
+
   function log() {
     if (kind === 'steps') {
       if (stepCount <= 0) return
       actions.logActivity({ kind, label: `${num(stepCount)} steps`, minutes: 0, steps: stepCount })
+      setLogged({ kindLabel: 'Steps', emoji: def.emoji, minutes: 0, steps: stepCount, kcal: burnPreview })
     } else {
       if (mins <= 0 && dist <= 0) return
       const label = def.usesDistance && dist ? `a ${dist} km ${def.label.toLowerCase()}` : `a ${def.label.toLowerCase()}`
-      actions.logActivity({ kind, label, minutes: mins, km: def.usesDistance ? dist || undefined : undefined })
+      const distance = def.usesDistance ? dist || undefined : undefined
+      actions.logActivity({ kind, label, minutes: mins, km: distance })
+      setLogged({ kindLabel: def.label, emoji: def.emoji, minutes: mins, km: distance, kcal: burnPreview })
     }
-    onClose()
   }
 
+  const summary = logged
+    ? [logged.km ? `${logged.km} km` : logged.steps ? `${num(logged.steps)} steps` : `${logged.minutes} min`, `${num(logged.kcal)} kcal burned`].join(' · ')
+    : ''
+
   return (
-    <Sheet open={open} onClose={onClose} title="Log activity">
+    <>
+    <Sheet open={open} onClose={close} title={logged ? 'Nice work!' : 'Log activity'}>
+      {logged ? (
+        <div style={{ padding: '10px 18px 26px', textAlign: 'center' }}>
+          <div style={{ fontSize: 60, marginBottom: 6 }}>{logged.emoji}</div>
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 26, color: T.text }}>Logged! +30 XP</div>
+          <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim, marginBottom: 22 }}>{summary}</div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={close} className="pressable" style={{ flex: 1, background: T.glassHi, color: T.text, border: `1px solid ${T.line}`, borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Done</button>
+            <button onClick={() => setSharing(true)} className="pressable" style={{ flex: 1.4, background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Share to story</button>
+          </div>
+        </div>
+      ) : (
       <div style={{ padding: '6px 18px 24px' }}>
         {/* kind picker */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -81,7 +110,10 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
           Log activity · +30 XP
         </button>
       </div>
+      )}
     </Sheet>
+    {sharing && logged && <StoryComposer story={{ type: 'activity', activity: logged }} name={account?.name ?? ''} onClose={() => setSharing(false)} />}
+    </>
   )
 }
 
