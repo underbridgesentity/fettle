@@ -418,8 +418,10 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
       <div onClick={() => onOpenPost(post.id)} style={{ cursor: 'pointer' }}>
         {post.text && <div style={{ fontFamily: T.body, fontWeight: 600, fontSize: 14.5, color: T.text, lineHeight: 1.45, marginBottom: 10 }}>{post.text}</div>}
 
+        {/* data: = local capture, http(s): = uploaded to Storage; anything else is
+            a seeded CSS-gradient placeholder. */}
         {post.photo && (
-          post.photo.startsWith('data:') ? (
+          post.photo.startsWith('data:') || post.photo.startsWith('http') ? (
             <img src={post.photo} alt="" style={{ width: '100%', height: 148, objectFit: 'cover', borderRadius: 18, marginBottom: 10 }} />
           ) : (
             <div style={{ position: 'relative', height: 148, borderRadius: 18, background: post.photo, marginBottom: 10, overflow: 'hidden' }}>

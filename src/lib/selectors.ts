@@ -33,7 +33,11 @@ function mergeComments(entry: FeedEntry, s: UserState) {
 }
 
 export function decorateEntry(entry: FeedEntry, s: UserState): DecoratedFeed {
-  const myReaction = s.reactions[entry.id] ?? (s.cheers[entry.id] ? ('cheer' as ReactionKind) : null)
+  // Real community posts carry the viewer's reaction from the server; seeded and
+  // local entries fall back to the locally-stored reaction.
+  const myReaction = entry.serverMyReaction !== undefined
+    ? entry.serverMyReaction
+    : s.reactions[entry.id] ?? (s.cheers[entry.id] ? ('cheer' as ReactionKind) : null)
   const counts: Partial<Record<ReactionKind, number>> = { ...(entry.baseReactions ?? {}) }
   if (myReaction) counts[myReaction] = (counts[myReaction] ?? 0) + 1
   const totalReactions = Object.values(counts).reduce((t, n) => t + (n ?? 0), 0)

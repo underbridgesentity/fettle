@@ -7,6 +7,7 @@ import { REACTIONS, REACTION_BY_KIND, MOODS } from '../lib/social'
 import { POST_TYPES, POST_TYPE_BY_TYPE } from '../lib/social'
 import { CIRCLE_BY_ID, MEMBER_BY_ID } from '../lib/seed'
 import { relativeTime, num } from '../lib/format'
+import { dataUrlFromFile, type Frames } from '../lib/image'
 import { buildCircleFeed, circleGoalProgress, type DecoratedFeed } from '../lib/selectors'
 import type { Comment, Mood, PostType } from '../lib/types'
 import { T, card, inset, eyebrow, hexA } from '../lib/theme'
@@ -138,18 +139,35 @@ function CommentRow({ com, onOpenMember, onDelete }: { com: Comment; onOpenMembe
 export function ComposeSheet({ open, initialType, circleId, onClose }: { open: boolean; initialType?: PostType; circleId?: string; onClose: () => void }) {
   const [type, setType] = useState<PostType>(initialType ?? 'update')
   const [text, setText] = useState('')
+  // display = small preview frame; analysis = the higher-quality frame we upload.
+  const [photo, setPhoto] = useState<Frames | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
       setType(initialType ?? 'update')
       setText('')
+      setPhoto(null)
     }
   }, [open, initialType])
 
+  const canShare = !!text.trim() || !!photo
+
   function share() {
-    if (!text.trim()) return
-    actions.post({ type, text, circleId })
+    if (!canShare) return
+    actions.post({ type, text, circleId, photoDataUrl: photo?.analysis, photoPreview: photo?.display })
     onClose()
+  }
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      setPhoto(await dataUrlFromFile(file))
+    } catch {
+      /* unreadable file: keep composing without a photo */
+    }
   }
 
   const def = POST_TYPE_BY_TYPE[type]
@@ -180,11 +198,27 @@ export function ComposeSheet({ open, initialType, circleId, onClose }: { open: b
           style={{ width: '100%', background: T.glass, border: `1px solid ${T.line}`, borderRadius: 18, padding: 16, fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 15, color: T.text, outline: 'none', resize: 'none', lineHeight: 1.45 }}
         />
 
+        {/* photo attachment (uploads to Storage on real backends) */}
+        {photo ? (
+          <div style={{ position: 'relative', marginTop: 12 }}>
+            <img src={photo.display} alt="Attached" style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 16, display: 'block' }} />
+            <button onClick={() => setPhoto(null)} aria-label="Remove photo" style={{ position: 'absolute', top: 8, right: 8, width: 30, height: 30, borderRadius: '50%', background: 'rgba(11,13,19,.62)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+          </div>
+        ) : (
+          <button onClick={() => fileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, background: T.glass, border: `1px dashed ${T.line}`, borderRadius: 14, padding: '10px 14px', cursor: 'pointer', width: '100%' }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 16l5-4 4 3 4-4 5 4" /></svg>
+            <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 13, color: T.dim }}>Add a photo</span>
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: 'none' }} />
+
         <button
           onClick={share}
-          disabled={!text.trim()}
+          disabled={!canShare}
           className="pressable"
-          style={{ width: '100%', marginTop: 16, background: text.trim() ? T.accent : T.glass, color: text.trim() ? T.ink : T.faint, border: 'none', borderRadius: T.r.pill, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: text.trim() ? 'pointer' : 'default', ['--press-y' as string]: '3px' }}
+          style={{ width: '100%', marginTop: 16, background: canShare ? T.accent : T.glass, color: canShare ? T.ink : T.faint, border: 'none', borderRadius: T.r.pill, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: canShare ? 'pointer' : 'default', ['--press-y' as string]: '3px' }}
         >
           Share {def.label.toLowerCase()} · +20 XP
         </button>

@@ -131,4 +131,7 @@ export const localApi: PippinApi = {
   async listCommunity() { return [] },
   async createPost() { return null },
   async deletePostRemote() {},
+  async reactToPost() {},
+  async commentOnPost() { return null },
+  async deleteCommentRemote() {},
 }

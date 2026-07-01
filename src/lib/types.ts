@@ -129,6 +129,9 @@ export type FeedEntry = {
   seedComments?: Comment[]
   /** when set, this post belongs to a support circle rather than the global feed */
   circleId?: string
+  /** real community posts only: the viewer's reaction as known by the server.
+   * When present (even null) it overrides the local reactions lookup. */
+  serverMyReaction?: ReactionKind | null
 }
 
 export type UserState = {

@@ -116,6 +116,8 @@ function refreshCommunity(excludeId: string) {
 }
 
 // Map a real community post to the FeedEntry shape the feed already renders.
+// Server reaction counts land in baseReactions, other users' comments arrive as
+// seedComments, and the viewer's own reaction rides in serverMyReaction.
 function postToFeedEntry(p: CommunityPost, myId: string, myName: string): FeedEntry {
   const mine = p.authorId === myId
   return {
@@ -123,7 +125,8 @@ function postToFeedEntry(p: CommunityPost, myId: string, myName: string): FeedEn
     at: p.createdAt,
     kind: 'post',
     author: mine ? 'me' : p.authorId,
-    name: mine ? `${myName.split(' ')[0]} (You)` : p.authorName,
+    // No "(You)" suffix here: the feed card appends it for author === 'me'.
+    name: mine ? myName.split(' ')[0] : p.authorName,
     initial: (p.authorName[0] || '?').toUpperCase(),
     avatar: p.authorAvatar,
     action: POST_ACTION[p.postType ?? 'update'],
@@ -131,7 +134,20 @@ function postToFeedEntry(p: CommunityPost, myId: string, myName: string): FeedEn
     photo: p.photoUrl,
     postType: p.postType ?? 'update',
     baseCheers: 0,
+    baseReactions: p.reactions,
+    seedComments: p.comments,
+    serverMyReaction: p.myReaction,
   }
+}
+
+// Update one community post in place (returns false when the id is not a
+// real community post, so callers can fall back to the local path).
+function patchCommunityPost(id: string, patch: (e: FeedEntry) => FeedEntry): boolean {
+  const list = current.communityPosts
+  if (!list?.some((e) => e.id === id)) return false
+  current = { ...current, communityPosts: list.map((e) => (e.id === id ? patch(e) : e)) }
+  emit()
+  return true
 }
 
 // Pull the shared community feed (Supabase only). Graceful: on any error the
@@ -452,6 +468,16 @@ export const actions = {
   react(feedId: string, kind: ReactionKind) {
     const { data } = current
     if (!data) return
+    // Real community post: toggle on the server, optimistically in the UI.
+    let next: ReactionKind | null = kind
+    const wasReal = patchCommunityPost(feedId, (e) => {
+      next = e.serverMyReaction === kind ? null : kind
+      return { ...e, serverMyReaction: next }
+    })
+    if (wasReal) {
+      if (api.realFeed) void api.reactToPost(feedId, next).catch(() => {})
+      return
+    }
     const reactions = { ...data.reactions }
     if (reactions[feedId] === kind) delete reactions[feedId]
     else reactions[feedId] = kind
@@ -473,6 +499,19 @@ export const actions = {
       text: text.trim(),
       tip,
     }
+    // Real community post: show optimistically, then swap in the server row
+    // (which carries the real id, needed to delete it later).
+    const isReal = (current.communityPosts ?? []).some((e) => e.id === feedId)
+    if (isReal && api.realFeed) {
+      patchCommunityPost(feedId, (e) => ({ ...e, seedComments: [...(e.seedComments ?? []), com] }))
+      void api
+        .commentOnPost(feedId, text, tip)
+        .then((server) => {
+          if (server) patchCommunityPost(feedId, (e) => ({ ...e, seedComments: (e.seedComments ?? []).map((c) => (c.id === com.id ? server : c)) }))
+        })
+        .catch(() => {})
+      return
+    }
     commit({ ...data, comments: { ...data.comments, [feedId]: [...(data.comments[feedId] ?? []), com] } })
   },
 
@@ -480,12 +519,22 @@ export const actions = {
   deleteComment(feedId: string, commentId: string) {
     const { data } = current
     if (!data) return
+    // Real community post: remove my comment optimistically + on the server.
+    const entry = (current.communityPosts ?? []).find((e) => e.id === feedId)
+    if (entry && (entry.seedComments ?? []).some((c) => c.id === commentId && c.author === 'me')) {
+      patchCommunityPost(feedId, (e) => ({ ...e, seedComments: (e.seedComments ?? []).filter((c) => c.id !== commentId) }))
+      if (api.realFeed) void api.deleteCommentRemote(commentId).catch(() => {})
+      setToast('Comment deleted')
+      return
+    }
     const list = data.comments[feedId] ?? []
     if (!list.some((c) => c.id === commentId && c.author === 'me')) return
     commit({ ...data, comments: { ...data.comments, [feedId]: list.filter((c) => c.id !== commentId) } }, { toast: 'Comment deleted' })
   },
 
-  post(input: { type: PostType; text: string; circleId?: string; photoDataUrl?: string }) {
+  // photoDataUrl is the higher-quality frame for Storage upload; photoPreview is
+  // the small frame kept when the post stays local (fits localStorage).
+  post(input: { type: PostType; text: string; circleId?: string; photoDataUrl?: string; photoPreview?: string }) {
     const { data, account } = current
     if (!data || !account || (!input.text.trim() && !input.photoDataUrl)) return
 
@@ -500,14 +549,14 @@ export const actions = {
           commit({ ...data, xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
         } else {
           // Server unavailable → keep it locally so composing never breaks.
-          const local = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim() })
+          const local = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), photo: input.photoPreview ?? null })
           commit({ ...data, feed: [local, ...data.feed], xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
         }
       })()
       return
     }
 
-    const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), circleId: input.circleId })
+    const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), circleId: input.circleId, photo: input.photoPreview ?? null })
     commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: input.circleId ? 'Posted to your circle ✨' : 'Shared with your squad ✨' })
     scheduleSupport(entry.id)
   },

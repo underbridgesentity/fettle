@@ -158,6 +158,52 @@ create policy "delete own posts"
 
 create index if not exists posts_created_idx on public.posts (created_at desc);
 
+-- ── post reactions (one per user per post) ──────────────────────────────────
+create table if not exists public.post_reactions (
+  post_id uuid not null references public.posts(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  kind text not null,
+  created_at timestamptz not null default now(),
+  primary key (post_id, user_id)
+);
+
+alter table public.post_reactions enable row level security;
+
+drop policy if exists "reactions readable by authenticated" on public.post_reactions;
+create policy "reactions readable by authenticated"
+  on public.post_reactions for select to authenticated using (true);
+
+drop policy if exists "manage own reactions" on public.post_reactions;
+create policy "manage own reactions"
+  on public.post_reactions for all to authenticated
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ── post comments ────────────────────────────────────────────────────────────
+create table if not exists public.post_comments (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.posts(id) on delete cascade,
+  author uuid not null references public.profiles(id) on delete cascade,
+  text text not null,
+  tip boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.post_comments enable row level security;
+
+drop policy if exists "comments readable by authenticated" on public.post_comments;
+create policy "comments readable by authenticated"
+  on public.post_comments for select to authenticated using (true);
+
+drop policy if exists "create own comments" on public.post_comments;
+create policy "create own comments"
+  on public.post_comments for insert to authenticated with check (auth.uid() = author);
+
+drop policy if exists "delete own comments" on public.post_comments;
+create policy "delete own comments"
+  on public.post_comments for delete to authenticated using (auth.uid() = author);
+
+create index if not exists post_comments_post_idx on public.post_comments (post_id, created_at);
+
 -- ── post photos (public storage bucket) ─────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('post-photos', 'post-photos', true)

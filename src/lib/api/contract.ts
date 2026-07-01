@@ -1,7 +1,7 @@
 // The data-access contract. Both the local-storage adapter and the Supabase
 // adapter implement PippinApi, so the rest of the app is backend-agnostic.
 
-import type { Account, FeedEntry, Goal, PostType, Settings, UserState } from '../types'
+import type { Account, Comment, FeedEntry, Goal, PostType, ReactionKind, Settings, UserState } from '../types'
 import type { SeedMember } from '../seed'
 
 export type SocialProvider = 'google' | 'apple'
@@ -20,6 +20,11 @@ export type CommunityPost = {
   text: string | null
   photoUrl: string | null
   createdAt: number
+  /** reaction counts from OTHER users (the viewer's own is in myReaction) */
+  reactions: Partial<Record<ReactionKind, number>>
+  myReaction: ReactionKind | null
+  /** all comments, viewer's own mapped to author 'me' */
+  comments: Comment[]
 }
 
 /** Onboarding goal stashed before an OAuth redirect, applied on return. */
@@ -60,6 +65,10 @@ export interface PippinApi {
   listCommunity(limit?: number): Promise<CommunityPost[]>
   createPost(input: { postType: PostType; text: string; photoDataUrl?: string }): Promise<CommunityPost | null>
   deletePostRemote(id: string): Promise<void>
+  /** set (upsert) or clear (null) the viewer's reaction on a community post */
+  reactToPost(postId: string, kind: ReactionKind | null): Promise<void>
+  commentOnPost(postId: string, text: string, tip: boolean): Promise<Comment | null>
+  deleteCommentRemote(commentId: string): Promise<void>
 }
 
 export class ApiError extends Error {

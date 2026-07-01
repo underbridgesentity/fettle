@@ -6,7 +6,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { gradientFor, initialOf } from '../format'
 import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
-import type { Account, Goal, PostType, UserState } from '../types'
+import type { Account, Comment, Goal, PostType, ReactionKind, UserState } from '../types'
 import type { SeedMember } from '../seed'
 import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type CommunityPost, type PippinApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
 
@@ -265,22 +265,50 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
 
     // ── community feed ──────────────────────────────────────────────────────
     async listCommunity(limit = 40): Promise<CommunityPost[]> {
-      const { data, error } = await sb
+      const me = await uid()
+      const rich = await sb
         .from('posts')
-        .select('id, author, post_type, text, photo_url, created_at, profiles(name, avatar)')
+        .select('id, author, post_type, text, photo_url, created_at, profiles(name, avatar), post_reactions(user_id, kind), post_comments(id, author, text, tip, created_at, profiles(name, avatar))')
         .order('created_at', { ascending: false })
         .limit(limit)
+      // The reactions/comments tables may not exist yet (older schema).
+      // Degrade to plain posts rather than blanking the whole feed.
+      const res = rich.error
+        ? await sb
+            .from('posts')
+            .select('id, author, post_type, text, photo_url, created_at, profiles(name, avatar)')
+            .order('created_at', { ascending: false })
+            .limit(limit)
+        : rich
+      const { data, error } = res as { data: unknown; error: unknown }
       if (error || !data) return []
-      return (data as unknown as PostRow[]).map((r) => ({
-        id: r.id,
-        authorId: r.author,
-        authorName: r.profiles?.name || 'Someone',
-        authorAvatar: r.profiles?.avatar || gradientFor(r.author),
-        postType: r.post_type,
-        text: r.text,
-        photoUrl: r.photo_url,
-        createdAt: Date.parse(r.created_at),
-      }))
+      return (data as unknown as PostRow[]).map((r) => {
+        // Split reactions into "everyone else" counts + the viewer's own, matching
+        // how the feed decorator layers my reaction on top of base counts.
+        const reactions: Partial<Record<ReactionKind, number>> = {}
+        let myReaction: ReactionKind | null = null
+        for (const re of r.post_reactions ?? []) {
+          const kind = re.kind as ReactionKind
+          if (re.user_id === me) myReaction = kind
+          else reactions[kind] = (reactions[kind] ?? 0) + 1
+        }
+        const comments = (r.post_comments ?? [])
+          .map((c) => toComment(c, me))
+          .sort((a, b) => a.at - b.at)
+        return {
+          id: r.id,
+          authorId: r.author,
+          authorName: r.profiles?.name || 'Someone',
+          authorAvatar: r.profiles?.avatar || gradientFor(r.author),
+          postType: r.post_type,
+          text: r.text,
+          photoUrl: r.photo_url,
+          createdAt: Date.parse(r.created_at),
+          reactions,
+          myReaction,
+          comments,
+        }
+      })
     },
 
     async createPost(input): Promise<CommunityPost | null> {
@@ -293,13 +321,62 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
         .select('id, created_at')
         .single()
       if (error || !data) return null
-      return { id: data.id, authorId: acc.id, authorName: acc.name, authorAvatar: acc.avatar, postType: input.postType, text: input.text.trim() || null, photoUrl, createdAt: Date.parse(data.created_at) }
+      return { id: data.id, authorId: acc.id, authorName: acc.name, authorAvatar: acc.avatar, postType: input.postType, text: input.text.trim() || null, photoUrl, createdAt: Date.parse(data.created_at), reactions: {}, myReaction: null, comments: [] }
     },
 
     async deletePostRemote(id) {
       await sb.from('posts').delete().eq('id', id)
     },
+
+    async reactToPost(postId, kind) {
+      const me = await uid()
+      if (!me) return
+      if (kind) await sb.from('post_reactions').upsert({ post_id: postId, user_id: me, kind })
+      else await sb.from('post_reactions').delete().eq('post_id', postId).eq('user_id', me)
+    },
+
+    async commentOnPost(postId, text, tip) {
+      const acc = await currentAccount()
+      if (!acc || !text.trim()) return null
+      const { data, error } = await sb
+        .from('post_comments')
+        .insert({ post_id: postId, author: acc.id, text: text.trim(), tip })
+        .select('id, created_at')
+        .single()
+      if (error || !data) return null
+      return {
+        id: data.id,
+        at: Date.parse(data.created_at),
+        author: 'me',
+        name: acc.name.split(' ')[0],
+        initial: (acc.name[0] || 'Y').toUpperCase(),
+        avatar: acc.avatar,
+        text: text.trim(),
+        tip,
+      }
+    },
+
+    async deleteCommentRemote(commentId) {
+      await sb.from('post_comments').delete().eq('id', commentId)
+    },
   }
 }
 
-type PostRow = { id: string; author: string; post_type: PostType | null; text: string | null; photo_url: string | null; created_at: string; profiles: { name: string | null; avatar: string | null } | null }
+// Map a raw comment row to the app's Comment shape ('me' for the viewer's own).
+function toComment(c: CommentRow, me: string | null): Comment {
+  const mine = c.author === me
+  const name = c.profiles?.name || 'Someone'
+  return {
+    id: c.id,
+    at: Date.parse(c.created_at),
+    author: mine ? 'me' : c.author,
+    name: name.split(' ')[0],
+    initial: (name[0] || '?').toUpperCase(),
+    avatar: c.profiles?.avatar || gradientFor(c.author),
+    text: c.text,
+    tip: c.tip || undefined,
+  }
+}
+
+type CommentRow = { id: string; author: string; text: string; tip: boolean; created_at: string; profiles: { name: string | null; avatar: string | null } | null }
+type PostRow = { id: string; author: string; post_type: PostType | null; text: string | null; photo_url: string | null; created_at: string; profiles: { name: string | null; avatar: string | null } | null; post_reactions: { user_id: string; kind: string }[] | null; post_comments: CommentRow[] | null }
