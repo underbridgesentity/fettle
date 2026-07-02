@@ -13,9 +13,12 @@ const CTA = ['Get started', 'Continue', 'Continue', 'Create account']
 type Mode = 'onboard' | 'login'
 type Err = { field?: 'name' | 'email' | 'password'; message: string } | null
 
-export function Auth() {
-  const [mode, setMode] = useState<Mode>('onboard')
-  const [step, setStep] = useState(0)
+export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup' | 'login'; onExit?: () => void } = {}) {
+  // When opened from the landing page (onExit set), the landing already played
+  // the welcome moment, so sign-up starts straight at the goal picker.
+  const minStep = initialView === 'signup' && onExit ? 1 : 0
+  const [mode, setMode] = useState<Mode>(initialView === 'login' ? 'login' : 'onboard')
+  const [step, setStep] = useState(minStep)
   const [goal, setGoal] = useState<Goal>('eat')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -69,14 +72,19 @@ export function Auth() {
   function back() {
     setErr(null)
     if (mode === 'login') {
-      setMode('onboard')
-      setStep(0)
-    } else if (step > 0) {
+      if (onExit && initialView === 'login') onExit()
+      else {
+        setMode('onboard')
+        setStep(minStep)
+      }
+    } else if (step > minStep) {
       setStep(step - 1)
+    } else {
+      onExit?.()
     }
   }
 
-  const canBack = mode === 'login' || (mode === 'onboard' && step > 0)
+  const canBack = mode === 'login' || step > minStep || !!onExit
 
   if (mode === 'login') {
     return (
@@ -101,7 +109,7 @@ export function Auth() {
         <PrimaryButton onClick={submitLogin} disabled={busy}>
           {busy ? 'Logging in…' : 'Log in'}
         </PrimaryButton>
-        <LinkButton onClick={() => { setMode('onboard'); setStep(0); setErr(null) }}>New here? Create an account</LinkButton>
+        <LinkButton onClick={() => { setMode('onboard'); setStep(minStep); setErr(null) }}>New here? Create an account</LinkButton>
       </Shell>
     )
   }

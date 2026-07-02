@@ -166,3 +166,378 @@ button {
     background: var(--bg);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive shells (desktop <-> mobile)
+   Breakpoint: 960px. Below it the app is exactly the phone experience
+   (full-bleed column + bottom tab bar); above it we add a sidebar and frame
+   the auth flow in a floating card.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Centered stage for auth / onboarding / splash */
+.center-stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% -10%, #fbf7ef, #e9e3d6 60%);
+}
+.center-frame {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+@media (min-width: 960px) {
+  .center-frame {
+    max-width: 440px;
+    height: min(860px, 94vh);
+    border-radius: 40px;
+    box-shadow: 0 40px 90px rgba(60, 45, 20, 0.22), 0 0 0 1px rgba(40, 33, 22, 0.07);
+  }
+}
+
+/* Logged-in app shell: sidebar + centered app column */
+.app-shell {
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: radial-gradient(circle at 50% -10%, #fbf7ef, #e9e3d6 60%);
+}
+.side-nav {
+  display: none;
+}
+.app-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.app-column {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+.tabbar-slot {
+  display: contents;
+}
+@media (min-width: 960px) {
+  .app-shell {
+    gap: 28px;
+    padding: 22px 28px;
+  }
+  .side-nav {
+    display: flex;
+    flex-direction: column;
+    width: 232px;
+    flex: none;
+    padding: 18px 6px;
+  }
+  .app-main {
+    justify-content: center;
+    align-items: stretch;
+  }
+  .app-column {
+    max-width: 520px;
+    border-radius: 36px;
+    box-shadow: 0 30px 70px rgba(60, 45, 20, 0.16), 0 0 0 1px rgba(40, 33, 22, 0.06);
+  }
+  .tabbar-slot {
+    display: none;
+  }
+}
+
+/* Sidebar items */
+.snav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.snav-item:hover {
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+}
+.snav-item.active {
+  background: #ffffff;
+  color: var(--accent);
+  box-shadow: 0 8px 22px rgba(48, 38, 22, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Landing / marketing page
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ld-root {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+.ld-wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+/* nav */
+.ld-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  /* solid-ish, deliberately no backdrop-filter (iOS scroll perf) */
+  background: rgba(241, 237, 228, 0.94);
+  border-bottom: 1px solid rgba(40, 33, 22, 0.06);
+}
+.ld-nav-links {
+  display: none;
+  gap: 6px;
+}
+@media (min-width: 760px) {
+  .ld-nav-links {
+    display: flex;
+  }
+}
+.ld-nav-link {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ld-nav-link:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+}
+
+/* hero */
+.ld-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 34px;
+  align-items: center;
+  padding: 48px 0 26px;
+}
+@media (min-width: 960px) {
+  .ld-hero {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 20px;
+    padding: 64px 0 40px;
+    min-height: 78vh;
+  }
+}
+.ld-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(34px, 10vw, 78px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 14px 0 18px;
+}
+.ld-sub {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 480px;
+}
+.ld-hero-copy {
+  text-align: center;
+}
+.ld-hero-ctas {
+  justify-content: center;
+}
+@media (min-width: 960px) {
+  .ld-hero-copy {
+    text-align: left;
+  }
+  .ld-hero-ctas {
+    justify-content: flex-start;
+  }
+}
+
+/* hero phone: keep the device mock phone-sized at EVERY viewport (the
+   component's own media query would otherwise expand it full-screen) */
+.ld-phone {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.ld-phone-scale {
+  transform-origin: top center;
+}
+.ld-phone .ios-device {
+  width: 402px !important;
+  height: 874px !important;
+  border-radius: 48px !important;
+  box-shadow: 0 40px 90px rgba(60, 45, 20, 0.28), 0 0 0 1px rgba(40, 33, 22, 0.08) !important;
+}
+.ld-phone .ios-island {
+  display: block !important;
+}
+.ld-phone .ios-home-indicator {
+  display: flex !important;
+}
+.ld-phone .ios-statusbar {
+  display: flex !important;
+}
+
+/* floating chips around the phone */
+.ld-chip {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 10px 14px;
+  box-shadow: 0 14px 34px rgba(48, 38, 22, 0.16);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  animation: ld-float 5s ease-in-out infinite;
+}
+
+/* marquee */
+.ld-marquee {
+  overflow: hidden;
+  padding: 18px 0;
+  border-top: 1px solid rgba(40, 33, 22, 0.06);
+  border-bottom: 1px solid rgba(40, 33, 22, 0.06);
+  background: var(--bg-elev);
+}
+.ld-marquee-track {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  animation: ld-marquee 26s linear infinite;
+}
+
+/* feature grid */
+.ld-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 720px) {
+  .ld-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+  }
+}
+.ld-card {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+.ld-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1px 2px rgba(48, 38, 22, 0.04), 0 24px 48px rgba(48, 38, 22, 0.12);
+}
+
+/* meet pip row */
+.ld-pips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+@media (min-width: 760px) {
+  .ld-pips {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* steps */
+.ld-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+@media (min-width: 860px) {
+  .ld-steps {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 22px;
+  }
+}
+
+/* entrance + ambient animation */
+.ld-up {
+  opacity: 0;
+  animation: ld-up 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+@keyframes ld-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ld-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+@keyframes ld-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* hero phone sizing: scale the 402x874 mock down per viewport */
+.ld-phone-box {
+  height: 500px;
+  display: flex;
+  justify-content: center;
+}
+.ld-phone-scale {
+  /* transform does not shrink the LAYOUT box, so negative side margins
+     ( -402*(1-scale)/2 ) keep the scaled mock from forcing overflow */
+  transform: scale(0.56);
+  margin: 0 -88px;
+}
+@media (min-width: 960px) {
+  .ld-phone-box {
+    height: 648px;
+  }
+  .ld-phone-scale {
+    transform: scale(0.73);
+    margin: 0 -54px;
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { IOSDevice } from './components/IOSDevice'
+import { CenterFrame } from './components/CenterFrame'
+import { SideNav } from './components/SideNav'
 import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
 import { Mascot } from './components/Mascot'
@@ -10,7 +11,7 @@ import { Home } from './screens/Home'
 import { Quests } from './screens/Quests'
 import { Squad } from './screens/Squad'
 import { Profile } from './screens/Profile'
-import { Auth } from './screens/Auth'
+import { Landing } from './screens/Landing'
 import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
@@ -25,11 +26,7 @@ import type { PostType } from './lib/types'
 export function App() {
   return (
     <StoreProvider>
-      <div className="pippin-stage">
-        <IOSDevice>
-          <Root />
-        </IOSDevice>
-      </div>
+      <Root />
     </StoreProvider>
   )
 }
@@ -82,14 +79,17 @@ function Root() {
     }
   }, [])
 
-  if (status === 'loading') return <Splash />
-  if (!account || !data) return <Auth />
-  if (!data.welcomed) return <Welcome name={firstName(account.name)} />
+  if (status === 'loading') return <CenterFrame><Splash /></CenterFrame>
+  if (!account || !data) return <Landing />
+  if (!data.welcomed) return <CenterFrame><Welcome name={firstName(account.name)} /></CenterFrame>
 
   const openPost = postId && data ? findDecoratedPost(data, postId, communityPosts ?? []) : null
 
   return (
-    <>
+    <div className="app-shell">
+      <SideNav tab={tab} onTab={setTab} onCapture={() => setCapture(true)} />
+      <div className="app-main">
+        <div className="app-column">
       <div ref={scrollRef} className="pippin-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {tab === 'home' && (
           <Home
@@ -106,7 +106,10 @@ function Root() {
         {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} onSnap={() => setCapture(true)} />}
       </div>
 
-      <TabBar tab={tab} onTab={setTab} onCapture={() => setCapture(true)} />
+      {/* mobile-only bottom tabs; desktop uses the sidebar (styles.css) */}
+      <div className="tabbar-slot">
+        <TabBar tab={tab} onTab={setTab} onCapture={() => setCapture(true)} />
+      </div>
 
       {capture && <Capture onClose={() => setCapture(false)} />}
       <AddActivity open={activity} onClose={() => setActivity(false)} />
@@ -130,7 +133,9 @@ function Root() {
       {toast && <Toast key={toast.key} message={toast.msg} />}
       {celebration && <CelebrationOverlay data={celebration} onDismiss={() => actions.dismissCelebration()} onShare={() => setStoryCeleb(celebration)} />}
       <StoryComposer story={storyCeleb ? { type: 'milestone', celebration: storyCeleb } : null} name={account?.name ?? ''} onClose={() => setStoryCeleb(null)} />
-    </>
+        </div>
+      </div>
+    </div>
   )
 }
 
