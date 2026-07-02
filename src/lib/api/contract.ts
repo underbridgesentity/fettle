@@ -69,6 +69,9 @@ export interface PippinApi {
   reactToPost(postId: string, kind: ReactionKind | null): Promise<void>
   commentOnPost(postId: string, text: string, tip: boolean): Promise<Comment | null>
   deleteCommentRemote(commentId: string): Promise<void>
+
+  /** fire-and-forget welcome email to the signed-in user (idempotent server-side) */
+  sendWelcomeEmail(): Promise<void>
 }
 
 export class ApiError extends Error {

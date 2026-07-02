@@ -361,6 +361,11 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     async deleteCommentRemote(commentId) {
       await sb.from('post_comments').delete().eq('id', commentId)
     },
+
+    async sendWelcomeEmail() {
+      // Server-side idempotent (welcome_sent metadata flag); safe to fire blind.
+      await sb.functions.invoke('send-welcome').catch(() => {})
+    },
   }
 }
 

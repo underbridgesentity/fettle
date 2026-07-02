@@ -134,4 +134,5 @@ export const localApi: PippinApi = {
   async reactToPost() {},
   async commentOnPost() { return null },
   async deleteCommentRemote() {},
+  async sendWelcomeEmail() {},
 }

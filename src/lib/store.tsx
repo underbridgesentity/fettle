@@ -92,6 +92,7 @@ async function init() {
         storage.remove(PENDING_GOAL_KEY)
         data = freshUserData(account, goal)
         void api.saveState(account.id, data)
+        void api.sendWelcomeEmail() // idempotent server-side
       }
       current = { status: 'ready', account, data, community: null, toast: null, celebration: null }
       emit()
@@ -327,6 +328,7 @@ export const actions = {
     current = { ...current, account, data, community: null }
     emit()
     refreshCommunity(account.id); refreshFeed()
+    void api.sendWelcomeEmail() // idempotent server-side
   },
 
   finishWelcome() {
@@ -359,6 +361,7 @@ export const actions = {
     current = { ...current, account, data, community: null }
     emit()
     refreshCommunity(account.id); refreshFeed()
+    void api.sendWelcomeEmail() // idempotent server-side
   },
 
   logOut() {
